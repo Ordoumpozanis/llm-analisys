@@ -26,7 +26,15 @@ export type MessagesType = {
     title: string | null;
   }[];
 };
+
+export type SessionInfoType = {
+  Country: string;
+  City: string;
+  Title: string;
+};
+
 export type ChatAnalysisType = {
   messages: MessagesType[];
   globalStatistics: GlobalStatisticsType;
+  sessionInfo: SessionInfoType;
 };

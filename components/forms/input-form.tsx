@@ -15,8 +15,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-import { MessagesType, GlobalStatisticsType } from "@/types/chatResults";
+import {
+  MessagesType,
+  GlobalStatisticsType,
+  SessionInfoType,
+} from "@/types/chatResults";
 import { processChat } from "@/actions/scrap";
+import { CodeSquare } from "lucide-react";
 
 const formSchema = z.object({
   url: z.string().min(10, {
@@ -33,6 +38,7 @@ type UrlFormProps = {
   }: {
     messages: MessagesType; // Or use a more specific type like `ChatAnalysis['messages']`
     globalStatistics: GlobalStatisticsType; // Or use a more specific type like `ChatAnalysis['globalStatistics']`
+    sessionInfo: SessionInfoType; // Or use a more specific type like `ChatAnalysis['sessionInfo']`
   }) => void;
   onError?: (error: string) => void;
 };
@@ -75,8 +81,11 @@ const NewUrlForm = ({
         onError?.("I could not analise the chat data");
         return;
       }
-      const { messages, globalStatistics } = JSON.parse(result.chatData);
-      onResult({ messages, globalStatistics });
+      const { messages, globalStatistics, sessionInfo } = JSON.parse(
+        result.chatData
+      );
+
+      onResult({ messages, globalStatistics, sessionInfo });
     } catch (error) {
       console.error("Could not analisy the chat data:", error);
       onError?.("I could not analise the chat data");

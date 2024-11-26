@@ -101,6 +101,15 @@ interface GptScrapperConfig {
 }
 
 /**
+ * Interface for SessionInfo.
+ */
+interface SessionInfo {
+  Country?: string;
+  City?: string;
+  Title?: string;
+}
+
+/**
  * Class responsible for scraping and processing ChatGPT conversations.
  */
 export class GptScrapper {
@@ -645,7 +654,10 @@ export class GptScrapper {
    * @returns An object containing the messages and the global statistics as a JSON string.
    */
 
-  private globalStatistics(params: { json: string }): GlobalStatisticsResult {
+  private globalStatistics(params: {
+    json: string;
+    sessionInfo: SessionInfo;
+  }): GlobalStatisticsResult {
     const { json } = params;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let parsedMessages: any[];
@@ -684,14 +696,59 @@ export class GptScrapper {
       }
     });
 
-    const object = { messages: parsedMessages, globalStatistics: globalStats };
-    console.log("Global statistics calculated successfully.");
+    const object = {
+      messages: parsedMessages,
+      globalStatistics: globalStats,
+      sessionInfo: params.sessionInfo,
+    };
 
     return {
       messages: parsedMessages,
       content: JSON.stringify(object, null, 2),
     };
   }
+
+  /**
+   * Asynchronously extracts session-related information (Country, City, Title) from a JSON string.
+   *
+   * @function getSessionInfo
+   * @async
+   * @param {Object} param - The function parameter object.
+   * @param {string} param.json - A JSON string expected to contain `chatPageProps` and `meta` keys.
+   * @returns {Promise<SessionInfo>} A Promise that resolves to an object containing the session information,
+   * or `null` if parsing or extraction fails.
+   */
+
+  getSessionInfo = async ({ json }: { json: any }): Promise<SessionInfo> => {
+    try {
+      const jsonObject = JSON.parse(json);
+      // Validate the parsed object to ensure it's a non-null object
+      if (typeof jsonObject !== "object" || jsonObject === null) {
+        throw new Error("Invalid input: expected a JSON object.");
+      }
+
+      // Safely extract the required values using optional chaining
+      const Country = jsonObject.chatPageProps?.userCountry;
+      const City = jsonObject.chatPageProps?.cfIpCity;
+      const Title = jsonObject.meta?.title;
+
+      // Return an object containing the extracted session information
+
+      return {
+        Country: Country || "",
+        City: City || "",
+        Title: Title || "",
+      };
+    } catch (error) {
+      // Log an error with details to assist in debugging
+      console.error("Error processing session info:", error);
+      return {
+        Country: "",
+        City: "",
+        Title: "",
+      };
+    }
+  };
 
   /**
    * Reads a chat from a URL, processes and cleans its HTML, extracts data, and saves the results.
@@ -762,6 +819,11 @@ export class GptScrapper {
       }
     }
 
+    // Step 4.5: Extract Session Info
+    const sessionInfo = await this.getSessionInfo({
+      json: extracted.data,
+    });
+
     // Step 5: Extract Messages from JSON
     const messages = this.extractMessagesFromJSON({
       json: extracted.data,
@@ -797,6 +859,7 @@ export class GptScrapper {
     try {
       globalStats = this.globalStatistics({
         json: organized.data, // Pass organized messages
+        sessionInfo: sessionInfo,
       });
     } catch (error: unknown) {
       if (error instanceof Error) {

@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("NEXT_PUBLIC_DATABASE_URL")
+} 
+
+model User {
+  id                    String  @id @default(auto()) @map("_id") @db.ObjectId  
+  age                   String
+  businessRole          String
+  businessRoleOther     String?
+  chatUserId            String   @unique
+  country               String
+  educationLevel        String
+  educationLevelOther   String?
+  experienceLevel       String
+  frequencyOfChatbotUse String
+  scopeOfChat           String
+  metadata              Json?
+  sessionIds            String[] // Array of Session IDs
+}
+
+model Session {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String   // Reference to User as a string
+  messageIds        String[] // Array of Message IDs
+  createdAt         DateTime @default(now())
+  globalStatisticsId String? // Optional GlobalStatistics ID as string
+}
+
+model Message {
+  id                    String  @id @default(auto()) @map("_id") @db.ObjectId
+  sessionId             String   // Reference to Session as a string
+  authorId              String
+  authorRole            String
+  authorCreateTime      DateTime
+  authorTokens          Float
+  authorRecipient       String
+  authorStatus          String
+  statisticsId          String? // Optional Statistics ID as string
+  referenceIds          String[] // Array of references as strings
+  responseIds           String[] // Array of Response IDs as strings
+  messageGlobalStatsId  String? // Optional MessageGlobalStatistics ID as string
+}
+
+model Response {
+  id               String  @id @default(auto()) @map("_id") @db.ObjectId
+  messageId        String   // Reference to Message as a string
+  authorId         String
+  authorRole       String
+  createTime       DateTime
+  contentType      String
+  contentTokens    Float
+  status           String
+  weight           Float
+  metadata         Json?
+  recipient        String
+}
+
+model Statistics {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  messageId     String   // Reference to Message as a string
+  responses     Int
+  toolsCalled   Int
+  assistant     Int
+  systemCount   Int
+  webSearches   Int
+  citations     Int
+  images        Int
+}
+
+model MessageGlobalStatistics {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  messageId     String   // Reference to Message as a string
+  questions     Int
+  responses     Int
+  toolsCalled   Int
+  assistant     Int
+  systemCount   Int
+  webSearches   Int
+  citations     Int
+  images        Int
+  questionsAv   Float
+  responsesAv   Float
+  toolsCalledAv Float
+  assistantAv   Float
+  systemCountAv Float
+  webSearchesAv Float
+  citationsAv   Float
+  imagesAv      Float
+}
+
+model GlobalStatistics {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  sessionId     String?  // Optional reference to Session as a string
+  questions     Int      @default(0)
+  responses     Int      @default(0)
+  toolsCalled   Int      @default(0)
+  assistant     Int      @default(0)
+  systemCount   Int      @default(0)
+  webSearches   Int      @default(0)
+  citations     Int      @default(0)
+  images        Int      @default(0)
+  questionsAv   Float    @default(0)
+  responsesAv   Float    @default(0)
+  toolsCalledAv Float    @default(0)
+  assistantAv   Float    @default(0)
+  systemCountAv Float    @default(0)
+  webSearchesAv Float    @default(0)
+  citationsAv   Float    @default(0)
+  imagesAv      Float    @default(0)
+}

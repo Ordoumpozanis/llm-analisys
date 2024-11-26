@@ -1,18 +1,19 @@
 import React from "react";
-import { GlobalStatisticsType } from "@/types/chatResults";
+import { GlobalStatisticsType, SessionInfoType } from "@/types/chatResults";
 import { cn } from "@/lib/utils";
 import ColorLetters from "./color-letters";
-import { Button } from "../ui/button";
 
 type ChartAnalisysProps = {
   className?: string;
   globalStatistics: GlobalStatisticsType;
+  sessionInfo: SessionInfoType;
   onReset: () => void;
 };
 
 const ChartAnalisys = ({
   className,
   globalStatistics,
+  sessionInfo,
   onReset,
   ...props
 }: ChartAnalisysProps) => {
@@ -29,6 +30,7 @@ const ChartAnalisys = ({
         globalStatistics={globalStatistics}
         className="w-6/12"
         onReset={handleOnReset}
+        sessionInfo={sessionInfo}
       />
     </div>
   );

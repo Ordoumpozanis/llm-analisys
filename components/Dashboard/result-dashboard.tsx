@@ -1,7 +1,11 @@
 "use client";
 import React, { useState } from "react";
 import NewUrlForm from "../forms/input-form";
-import { MessagesType, GlobalStatisticsType } from "@/types/chatResults";
+import {
+  MessagesType,
+  GlobalStatisticsType,
+  SessionInfoType,
+} from "@/types/chatResults";
 import { cn } from "@/lib/utils";
 import Spinner from "../spinner";
 import ChartAnalisys from "./chart-analysis";
@@ -25,6 +29,11 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
       citations: 0,
       images: 0,
     });
+  const [sessionInfo, setSessionInfo] = useState<SessionInfoType>({
+    Country: "",
+    City: "",
+    Title: "",
+  });
 
   const [newSearch, setNewSearch] = useState<boolean>(true);
 
@@ -46,6 +55,13 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
       citations: 0,
       images: 0,
     });
+
+    setSessionInfo({
+      Country: "",
+      City: "",
+      Title: "",
+    });
+
     setNewSearch(true);
     setLoading({ show: false, message: "" });
   };
@@ -84,7 +100,7 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
                 images: 0,
               });
             }}
-            onResult={({ messages, globalStatistics }) => {
+            onResult={({ messages, globalStatistics, sessionInfo }) => {
               if (!messages || !globalStatistics) {
                 toast.error("Error: I could not fine chat data to analise.");
                 return;
@@ -92,6 +108,9 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
 
               setMessages(Array.isArray(messages) ? messages : [messages]);
               setGlobalStatistics(globalStatistics);
+
+              setSessionInfo(sessionInfo);
+
               setNewSearch(false);
               setLoading({ show: false, message: "" });
             }}
@@ -101,6 +120,7 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
         {!newSearch && !loading.show && (
           <ChartAnalisys
             globalStatistics={globalStatistics}
+            sessionInfo={sessionInfo}
             onReset={handleOnReset}
           />
         )}
