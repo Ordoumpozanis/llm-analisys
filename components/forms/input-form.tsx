@@ -44,14 +44,19 @@ const NewUrlForm = ({
   onResult,
   onError,
 }: UrlFormProps) => {
-  const [worker, setWorker] = useState<Worker | null>(null);
+  const [mainWorker, setmainWorker] = useState<Worker>(null);
+
   // innitialize the workers
   useEffect(() => {
     console.log("Initializing worker...");
-    const newWorker = new Worker(
-      new URL("../../public/workers/worker.js", import.meta.url)
+    const mainWorker = new Worker(
+      new URL("../../public/workers/getContent-worker.js", import.meta.url)
     );
-    setWorker(newWorker);
+    // const tokenWorker = new Worker(
+    //   new URL("../../public/workers/token-worker.js", import.meta.url)
+    // );
+
+    setmainWorker(mainWorker);
 
     return () => {
       // Do not terminate the worker immediately; only when it's no longer needed
@@ -69,8 +74,8 @@ const NewUrlForm = ({
 
   // Handle form submission
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!worker) {
-      console.error("No worker found");
+    if (!mainWorker) {
+      console.error("Workers not found");
       return;
     }
 
@@ -86,9 +91,9 @@ const NewUrlForm = ({
       const fetchedContent = result.chatData;
 
       console.log("Sending to worker...");
-      worker.postMessage({ content: fetchedContent });
+      mainWorker.postMessage({ content: fetchedContent });
 
-      worker.onmessage = (e) => {
+      mainWorker.onmessage = (e) => {
         const { success, data, error } = e.data;
         if (success) {
           console.log("Received data from worker:", data);
@@ -98,7 +103,7 @@ const NewUrlForm = ({
         }
       };
 
-      worker.onerror = (err) => {
+      mainWorker.onerror = (err) => {
         console.error("Worker encountered an error:", err);
         onError?.("Worker error");
       };

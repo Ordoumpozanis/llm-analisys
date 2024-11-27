@@ -1,6 +1,6 @@
+"use client";
 // GptScrapper.ts
 import JSON5 from "json5";
-import { Worker } from "worker_threads";
 
 /**
  * Interface representing the result of an operation.
@@ -97,7 +97,73 @@ export class GptScrapper {
    * Initializes a new instance of the GptScrapper class.
    * @param config - Configuration options for GptScrapper.
    */
-  constructor() {}
+
+  private tokenWorker: Worker | null = null;
+
+  constructor() {
+    this.initializeWorker();
+  }
+
+  /**
+   * Assigns an externally initialized worker to the class.
+   * @param worker - The externally initialized worker instance.
+   */
+  public initializeWorker() {
+    try {
+      this.tokenWorker = new Worker(
+        new URL("../public/workers/getContent-worker.js", import.meta.url)
+      );
+
+      console.log("Token worker SetUp");
+    } catch (error) {
+      console.error("Error initializing worker:", error);
+    }
+  }
+
+  /**
+   * Terminates the worker when the instance is destroyed.
+   */
+  public terminateWorker() {
+    if (this.tokenWorker) {
+      this.tokenWorker.terminate();
+      this.tokenWorker = null;
+      console.log("Token worker terminated");
+    }
+  }
+  /**
+   * Processes a message using the token-worker.
+   * @param message - The message to process.
+   * @param length - Whether to return token length or tokens themselves.
+   * @returns A promise that resolves with the processed message or rejects with an error.
+   */
+  public processMessageWithWorker(
+    message: any,
+    length: boolean = true
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (!this.tokenWorker) {
+        reject("Token worker is not initialized.");
+        return; // Ensure the function stops execution here
+      }
+
+      this.tokenWorker.onmessage = (e) => {
+        const { success, data, error } = e.data;
+        if (success) {
+          resolve(data);
+        } else {
+          reject(error || "An error occurred in the token worker");
+        }
+      };
+
+      this.tokenWorker.onerror = (err) => {
+        console.error("TokenWorker encountered an error:", err);
+        reject("Worker error");
+      };
+
+      // Post the message data to the worker
+      this.tokenWorker.postMessage({ message, modelName: "gpt-4", length });
+    });
+  }
 
   /**
    * Helper method to create an error result.
@@ -632,22 +698,6 @@ export class GptScrapper {
       };
     }
   };
-
-  // processMessageWithWorker(message, lenght = true) {
-  //   return new Promise((resolve, reject) => {
-  //     const worker = new Worker(new URL("./TokenWorker.js", import.meta.url), {
-  //       workerData: { message, modelName: "gpt-4", lenght: lenght },
-  //     });
-
-  //     worker.on("message", resolve);
-  //     worker.on("error", reject);
-  //     worker.on("exit", (code) => {
-  //       if (code !== 0) {
-  //         reject(new Error(`Worker stopped with exit code ${code}`));
-  //       }
-  //     });
-  //   });
-  // }
 
   /**
    * Reads a chat from a URL, processes and cleans its HTML, extracts data, and saves the results.

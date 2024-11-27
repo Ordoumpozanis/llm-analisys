@@ -7,6 +7,7 @@ console.log("Worker initialized!");
 self.onmessage = async function (e) {
   const { content, minimize = false } = e.data;
   console.log("Worker received content:", content);
+
   try {
     const result = await scraper.readChatFrontEnd({
       processResult: content,
@@ -14,12 +15,14 @@ self.onmessage = async function (e) {
     });
 
     if (result.status) {
+      console.log("Worker processed result successfully:", result.data);
       self.postMessage({ success: true, data: JSON.parse(result.data) });
     } else {
+      console.error("Worker processing failed:", result.error);
       self.postMessage({ success: false, error: result.error });
     }
   } catch (error) {
-    console.error("Worker error:", error);
+    console.error("Worker encountered an error:", error);
     self.postMessage({ success: false, error: error.message });
   }
 };
