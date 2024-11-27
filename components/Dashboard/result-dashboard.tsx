@@ -108,7 +108,6 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
 
               setMessages(Array.isArray(messages) ? messages : [messages]);
               setGlobalStatistics(globalStatistics);
-
               setSessionInfo(sessionInfo);
 
               setNewSearch(false);

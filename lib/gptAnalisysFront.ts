@@ -1,9 +1,6 @@
 // GptScrapper.ts
-
-import axios, { AxiosInstance, AxiosResponse } from "axios";
-import { JSDOM } from "jsdom";
-import fs from "fs/promises";
 import JSON5 from "json5";
+import { Worker } from "worker_threads";
 
 /**
  * Interface representing the result of an operation.
@@ -12,14 +9,6 @@ interface OperationResult<T> {
   success: boolean;
   data?: T;
   error?: string;
-}
-
-/**
- * Interface for JSON saving parameters.
- */
-interface SaveJsonParams {
-  data: string;
-  filename?: string;
 }
 
 /**
@@ -92,15 +81,6 @@ interface GlobalStatisticsResult {
 }
 
 /**
- * Configuration interface for GptScrapper.
- */
-interface GptScrapperConfig {
-  htmlFileName?: string;
-  outputFile?: string;
-  axiosInstance?: AxiosInstance;
-}
-
-/**
  * Interface for SessionInfo.
  */
 interface SessionInfo {
@@ -113,19 +93,11 @@ interface SessionInfo {
  * Class responsible for scraping and processing ChatGPT conversations.
  */
 export class GptScrapper {
-  private htmlFileName: string;
-  private outputFile: string;
-  private axios: AxiosInstance;
-
   /**
    * Initializes a new instance of the GptScrapper class.
    * @param config - Configuration options for GptScrapper.
    */
-  constructor(config?: GptScrapperConfig) {
-    this.htmlFileName = config?.htmlFileName || "cleaned.html";
-    this.outputFile = config?.outputFile || "serverResponse.json";
-    this.axios = config?.axiosInstance || axios.create();
-  }
+  constructor() {}
 
   /**
    * Helper method to create an error result.
@@ -134,70 +106,6 @@ export class GptScrapper {
    */
   private onError<T>(message: string): OperationResult<T> {
     return { success: false, error: message };
-  }
-
-  /**
-   * Fetches the HTML content from a ChatGPT conversation URL and cleans it.
-   * @param url - The GPT chat URL.
-   * @returns An object containing the success status and the cleaned HTML content.
-   */
-  public async processChat(url: string): Promise<OperationResult<string>> {
-    try {
-      console.log(`Fetching HTML content from URL: ${url}`);
-      const response: AxiosResponse<string> = await this.axios.get(url);
-      const htmlContent: string = response.data;
-
-      console.log("Parsing HTML content.");
-      const dom = new JSDOM(htmlContent);
-      const document = dom.window.document;
-
-      console.log("Cleaning up unwanted HTML elements.");
-      document
-        .querySelectorAll("meta, link, audio")
-        .forEach((element) => element.remove());
-
-      const cleanedHTML: string = dom.serialize();
-      console.log("HTML content cleaned successfully.");
-
-      return { success: true, data: cleanedHTML };
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        console.error(`Axios error processing chat: ${error.message}`);
-        return this.onError<string>(`Axios error: ${error.message}`);
-      } else if (error instanceof Error) {
-        console.error(`Error processing chat: ${error.message}`);
-        return this.onError<string>(`Error: ${error.message}`);
-      } else {
-        console.error("Unknown error processing chat.");
-        return this.onError<string>("Unknown error processing chat.");
-      }
-    }
-  }
-
-  /**
-   * Saves the cleaned HTML content to a specified file.
-   * @param filename - The filename to save the cleaned HTML.
-   * @param data - The HTML data to save.
-   * @returns An object indicating the success status.
-   */
-  private async saveHtml(
-    filename: string,
-    data: string
-  ): Promise<OperationResult<void>> {
-    try {
-      console.log(`Saving cleaned HTML to file: ${filename}`);
-      await fs.writeFile(filename, data, "utf8");
-      console.log(`Cleaned HTML content saved to ${filename}.`);
-      return { success: true };
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error(`Error saving HTML: ${error.message}`);
-        return this.onError<void>(`Failed to save HTML: ${error.message}`);
-      } else {
-        console.error("Unknown error saving HTML.");
-        return this.onError<void>("Unknown error saving HTML.");
-      }
-    }
   }
 
   /**
@@ -284,31 +192,6 @@ export class GptScrapper {
       .trim()
       .slice(0, -1)
       .trim();
-  }
-
-  /**
-   * Saves a JSON string to a specified file.
-   * @param params - An object containing the JSON data and optional filename.
-   * @returns An object indicating the success status.
-   */
-  private async saveJson(
-    params: SaveJsonParams
-  ): Promise<OperationResult<void>> {
-    const { data, filename = "data.json" } = params;
-    try {
-      console.log(`Saving JSON data to file: ${filename}`);
-      await fs.writeFile(filename, data, "utf8");
-      console.log(`JSON content saved to ${filename}.`);
-      return { success: true };
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error(`Error saving JSON: ${error.message}`);
-        return this.onError<void>(`Failed to save JSON: ${error.message}`);
-      } else {
-        console.error("Unknown error saving JSON.");
-        return this.onError<void>("Unknown error saving JSON.");
-      }
-    }
   }
 
   /**
@@ -750,148 +633,21 @@ export class GptScrapper {
     }
   };
 
-  /**
-   * Reads a chat from a URL, processes and cleans its HTML, extracts data, and saves the results.
-   * This is the only public method accessible externally.
-   * @param params - An object containing the URL and flags for various operations.
-   * @returns An object indicating the overall success status and any error encountered.
-   */
-  public async readChat(params: {
-    url: string;
-    minimize?: boolean;
-    createHtml?: boolean;
-    saveJson?: boolean;
-  }): Promise<OperationResult<string>> {
-    const {
-      url,
-      minimize = false,
-      createHtml = false,
-      saveJson = false,
-    } = params;
+  // processMessageWithWorker(message, lenght = true) {
+  //   return new Promise((resolve, reject) => {
+  //     const worker = new Worker(new URL("./TokenWorker.js", import.meta.url), {
+  //       workerData: { message, modelName: "gpt-4", lenght: lenght },
+  //     });
 
-    console.log("=== Starting Chat Processing ===");
-    console.log(`URL: ${url}`);
-    console.log(`Minimize: ${minimize}`);
-    console.log(`Create HTML: ${createHtml}`);
-    console.log(`Save JSON: ${saveJson}`);
-
-    // Step 1: Process Chat
-    const processResult = await this.processChat(url);
-    if (!processResult.success || !processResult.data) {
-      console.error("Failed to process chat. Exiting.");
-      return this.onError(processResult.error || "Failed to process chat.");
-    }
-
-    // Step 2: Save Cleaned HTML (optional)
-    if (createHtml) {
-      const saveHtmlResult = await this.saveHtml(
-        this.htmlFileName,
-        processResult.data
-      );
-      if (!saveHtmlResult.success) {
-        console.error("Failed to save HTML. Exiting.");
-        return this.onError(saveHtmlResult.error || "Failed to save HTML.");
-      }
-    }
-
-    // Step 3: Extract Server Response
-    const extracted = await this.extractServerResponse({
-      content: processResult.data,
-    });
-    if (!extracted.success || !extracted.data) {
-      console.error("Failed to extract server response. Exiting.");
-      return this.onError(
-        extracted.error || "Failed to extract server response."
-      );
-    }
-
-    // Step 4: Save Server Response JSON (optional)
-    if (saveJson) {
-      const saveJsonResult = await this.saveJson({
-        data: extracted.data,
-        filename: "serverResponse.json",
-      });
-      if (!saveJsonResult.success) {
-        console.error("Failed to save server response JSON. Exiting.");
-        return this.onError(
-          saveJsonResult.error || "Failed to save server response JSON."
-        );
-      }
-    }
-
-    // Step 4.5: Extract Session Info
-    const sessionInfo = await this.getSessionInfo({
-      json: extracted.data,
-    });
-
-    // Step 5: Extract Messages from JSON
-    const messages = this.extractMessagesFromJSON({
-      json: extracted.data,
-    });
-    if (!messages.success || !messages.data) {
-      console.error("Failed to extract messages from JSON. Exiting.");
-      return this.onError(
-        messages.error || "Failed to extract messages from JSON."
-      );
-    }
-
-    // Step 6: Minimize Messages (optional)
-    const minimized = this.minimizeMessagesFromJSON({
-      json: messages.data,
-      minimized: minimize,
-    });
-    if (!minimized.success || !minimized.data) {
-      console.error("Failed to minimize messages. Exiting.");
-      return this.onError(minimized.error || "Failed to minimize messages.");
-    }
-
-    // Step 7: Organize Messages
-    const organized = this.organizeMessages({
-      messagesJSON: minimized.data,
-    });
-    if (!organized.success || !organized.data) {
-      console.error("Failed to organize messages. Exiting.");
-      return this.onError(organized.error || "Failed to organize messages.");
-    }
-
-    // Step 8: Calculate Global Statistics
-    let globalStats: GlobalStatisticsResult;
-    try {
-      globalStats = this.globalStatistics({
-        json: organized.data, // Pass organized messages
-        sessionInfo: sessionInfo,
-      });
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error(
-          `Failed to calculate global statistics: ${error.message}`
-        );
-        return this.onError("Failed to calculate global statistics.");
-      } else {
-        console.error("Unknown error calculating global statistics.");
-        return this.onError("Unknown error calculating global statistics.");
-      }
-    }
-
-    // // Step 9: Save Final JSON Output
-    // const saveFinalJsonResult = await this.saveJson({
-    //   data: globalStats.content,
-    //   filename: "messages.json",
-    // });
-
-    // if (!saveFinalJsonResult.success) {
-    //   console.error("Failed to save final JSON output. Exiting.");
-    //   return this.onError(
-    //     saveFinalJsonResult.error || "Failed to save final JSON output."
-    //   );
-    // }
-
-    // console.log("=== Chat Processing Completed Successfully ===");
-    return {
-      success: true,
-      data: globalStats.content || "{}",
-    };
-  }
+  //     worker.on("message", resolve);
+  //     worker.on("error", reject);
+  //     worker.on("exit", (code) => {
+  //       if (code !== 0) {
+  //         reject(new Error(`Worker stopped with exit code ${code}`));
+  //       }
+  //     });
+  //   });
+  // }
 
   /**
    * Reads a chat from a URL, processes and cleans its HTML, extracts data, and saves the results.
@@ -1003,29 +759,3 @@ export class GptScrapper {
     }
   }
 }
-
-// // Entry point
-// const app = async ({
-//   url,
-//   minimize = false,
-//   createHtml = false,
-//   saveJson = false,
-// }: {
-//   url: string;
-//   minimize?: boolean;
-//   createHtml?: boolean;
-//   saveJson?: boolean;
-// }) => {
-//   const gpt = new GptScrapper();
-//   const result = await gpt.readChat({ url, minimize, createHtml, saveJson });
-
-//   if (result.success) {
-//     console.log("Chat processing completed successfully.");
-//   } else {
-//     console.error(`Chat processing failed: ${result.error}`);
-//   }
-// };
-
-// const url = "https://chatgpt.com/share/67449f60-81f4-8011-8775-5f1307d12394";
-
-// app({ url, minimize: false, createHtml: false, saveJson: false });

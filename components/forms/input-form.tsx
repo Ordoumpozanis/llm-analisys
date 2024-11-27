@@ -15,13 +15,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-import {
-  MessagesType,
-  GlobalStatisticsType,
-  SessionInfoType,
-} from "@/types/chatResults";
-import { processChat } from "@/actions/scrap";
-import { CodeSquare } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { getHtml } from "@/actions//getTheHtml";
 
 const formSchema = z.object({
   url: z.string().min(10, {
@@ -36,20 +31,35 @@ type UrlFormProps = {
     messages,
     globalStatistics,
   }: {
-    messages: MessagesType; // Or use a more specific type like `ChatAnalysis['messages']`
-    globalStatistics: GlobalStatisticsType; // Or use a more specific type like `ChatAnalysis['globalStatistics']`
-    sessionInfo: SessionInfoType; // Or use a more specific type like `ChatAnalysis['sessionInfo']`
+    messages: any; // Replace with proper type if available
+    globalStatistics: any; // Replace with proper type if available
+    sessionInfo: any; // Replace with proper type if available
   }) => void;
   onError?: (error: string) => void;
 };
 
 const NewUrlForm = ({
   className,
-  onResult,
   onReset,
+  onResult,
   onError,
-  ...props
 }: UrlFormProps) => {
+  const [worker, setWorker] = useState<Worker | null>(null);
+  // innitialize the workers
+  useEffect(() => {
+    console.log("Initializing worker...");
+    const newWorker = new Worker(
+      new URL("../../public/workers/worker.js", import.meta.url)
+    );
+    setWorker(newWorker);
+
+    return () => {
+      // Do not terminate the worker immediately; only when it's no longer needed
+      console.log("Worker instance cleanup.");
+    };
+  }, []);
+
+  // setup the form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,36 +69,42 @@ const NewUrlForm = ({
 
   // Handle form submission
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!worker) {
+      console.error("No worker found");
+      return;
+    }
+
     onReset?.();
+
     try {
-      // Call the processChat function
-      const result = await processChat({ url: values.url });
-
-      // Handle failure case
-      if (!result.success) {
-        console.log(
-          "Error: I could not fine chat data to analise." + result.error
-        );
-        onError?.("I could not analise the chat data");
+      const result = await getHtml({ url: values.url });
+      if (!result.success || !result.chatData) {
+        onError?.("Failed to fetch content from the server");
         return;
       }
 
-      // Ensure chatData is present
-      if (!result.chatData) {
-        console.log(
-          "Error: I could not fine chat data to analise." + result.error
-        );
-        onError?.("I could not analise the chat data");
-        return;
-      }
-      const { messages, globalStatistics, sessionInfo } = JSON.parse(
-        result.chatData
-      );
+      const fetchedContent = result.chatData;
 
-      onResult({ messages, globalStatistics, sessionInfo });
+      console.log("Sending to worker...");
+      worker.postMessage({ content: fetchedContent });
+
+      worker.onmessage = (e) => {
+        const { success, data, error } = e.data;
+        if (success) {
+          console.log("Received data from worker:", data);
+          onResult(data);
+        } else {
+          onError?.(error || "An error occurred during processing");
+        }
+      };
+
+      worker.onerror = (err) => {
+        console.error("Worker encountered an error:", err);
+        onError?.("Worker error");
+      };
     } catch (error) {
-      console.error("Could not analisy the chat data:", error);
-      onError?.("I could not analise the chat data");
+      console.error("Error during submission:", error);
+      onError?.("Unexpected error occurred");
     }
   }
 
