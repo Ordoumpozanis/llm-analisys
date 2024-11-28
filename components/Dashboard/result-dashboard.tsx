@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import NewUrlForm from "../forms/input-form";
 import {
-  MessagesType,
+  // MessagesType,
   GlobalStatisticsType,
   SessionInfoType,
 } from "@/types/chatResults";
@@ -17,7 +17,7 @@ interface DashboardProps {
 }
 
 const Dashboard = ({ className, ...props }: DashboardProps) => {
-  const [messages, setMessages] = useState<MessagesType[]>([]);
+  // const [messages, setMessages] = useState<MessagesType[]>([]);
   const [globalStatistics, setGlobalStatistics] =
     useState<GlobalStatisticsType>({
       questions: 0,
@@ -28,6 +28,8 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
       webSearches: 0,
       citations: 0,
       images: 0,
+      userTokens: 0,
+      systemTokens: 0,
     });
   const [sessionInfo, setSessionInfo] = useState<SessionInfoType>({
     Country: "",
@@ -44,7 +46,7 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
 
   const handleOnReset = () => {
     console.log("Resetting...");
-    setMessages([]);
+    // setMessages([]);
     setGlobalStatistics({
       questions: 0,
       responses: 0,
@@ -54,6 +56,8 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
       webSearches: 0,
       citations: 0,
       images: 0,
+      userTokens: 0,
+      systemTokens: 0,
     });
 
     setSessionInfo({
@@ -75,7 +79,7 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
     <>
       <div
         className={cn(
-          "w-full h-full flex flex-col justify-center items-center gap-2",
+          "w-screen h-screen flex flex-col justify-center items-center gap-2",
           className
         )}
         {...props}
@@ -88,7 +92,7 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
               setLoading({ show: true, message: "Loading..." });
               setNewSearch(false);
 
-              setMessages([]);
+              // setMessages([]);
               setGlobalStatistics({
                 questions: 0,
                 responses: 0,
@@ -98,6 +102,8 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
                 webSearches: 0,
                 citations: 0,
                 images: 0,
+                userTokens: 0,
+                systemTokens: 0,
               });
             }}
             onResult={({ messages, globalStatistics, sessionInfo }) => {
@@ -106,7 +112,7 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
                 return;
               }
 
-              setMessages(Array.isArray(messages) ? messages : [messages]);
+              // setMessages(Array.isArray(messages) ? messages : [messages]);
               setGlobalStatistics(globalStatistics);
               setSessionInfo(sessionInfo);
 
@@ -121,6 +127,7 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
             globalStatistics={globalStatistics}
             sessionInfo={sessionInfo}
             onReset={handleOnReset}
+            className="w-full h-full"
           />
         )}
         {loading.show && (

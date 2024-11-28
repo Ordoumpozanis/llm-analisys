@@ -7,6 +7,8 @@ export type GlobalStatisticsType = {
   webSearches: number;
   citations: number;
   images: number;
+  systemTokens: number;
+  userTokens: number;
 };
 
 export type MessagesType = {

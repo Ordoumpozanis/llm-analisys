@@ -68,12 +68,12 @@ function ColorLetters({
         </motion.p>
         <div
           className={cn(
-            "flex items-center gap-2 w/12 flex-wrap justify-center w-full border-2 border-dashed border-gray-200 rounded-lg p-8"
+            "flex items-center gap-2  flex-wrap justify-center w-full border-2 border-dashed border-gray-200 rounded-lg p-8"
           )}
         >
           <motion.p
             variants={fadeInVariant}
-            className="text-sm lg:text-2xl"
+            className="text- lg:text-2xl"
             custom={1}
           >
             In this chat you made{" "}
@@ -95,7 +95,7 @@ function ColorLetters({
 
           <motion.p
             variants={fadeInVariant}
-            className="text-sm lg:text-2xl"
+            className="text- lg:text-2xl"
             custom={3}
           >
             and Chat-GPT need
@@ -103,7 +103,7 @@ function ColorLetters({
 
           <motion.p
             variants={fadeInVariant}
-            className="text-sm lg:text-2xl"
+            className="text- lg:text-2xl"
             custom={4}
           >
             to create
@@ -125,7 +125,7 @@ function ColorLetters({
 
           <motion.p
             variants={fadeInVariant}
-            className="text-sm lg:text-2xl"
+            className="text- lg:text-2xl"
             custom={6}
           >
             in order to answer your questions.
@@ -133,7 +133,7 @@ function ColorLetters({
 
           <motion.p
             variants={fadeInVariant}
-            className="text-sm lg:text-2xl"
+            className="text- lg:text-2xl"
             custom={7}
           >
             In Responces we found
@@ -155,7 +155,7 @@ function ColorLetters({
 
           <motion.p
             variants={fadeInVariant}
-            className="text-sm lg:text-2xl"
+            className="text- lg:text-2xl"
             custom={9}
           >
             commands,
@@ -177,7 +177,7 @@ function ColorLetters({
 
           <motion.p
             variants={fadeInVariant}
-            className="text-sm lg:text-2xl"
+            className="text- lg:text-2xl"
             custom={11}
           >
             commands and
@@ -196,7 +196,7 @@ function ColorLetters({
 
           <motion.p
             variants={fadeInVariant}
-            className="text-sm lg:text-2xl"
+            className="text- lg:text-2xl"
             custom={13}
           >
             usages.
@@ -204,7 +204,7 @@ function ColorLetters({
 
           <motion.p
             variants={fadeInVariant}
-            className="text-sm lg:text-2xl"
+            className="text- lg:text-2xl"
             custom={14}
           >
             Also for your question we
@@ -214,7 +214,7 @@ function ColorLetters({
             <>
               <motion.p
                 variants={fadeInVariant}
-                className="text-sm lg:text-2xl"
+                className="text- lg:text-2xl"
                 custom={15}
               >
                 we found that Chat-Gpt used
@@ -236,7 +236,7 @@ function ColorLetters({
 
               <motion.p
                 variants={fadeInVariant}
-                className="text-sm lg:text-2xl"
+                className="text- lg:text-2xl"
                 custom={17}
               >
                 and
@@ -260,7 +260,7 @@ function ColorLetters({
             <>
               <motion.p
                 variants={fadeInVariant}
-                className="text-sm lg:text-2xl"
+                className="text- lg:text-2xl"
                 custom={19}
               >
                 we found that GPT did not use any
@@ -280,7 +280,7 @@ function ColorLetters({
 
               <motion.p
                 variants={fadeInVariant}
-                className="text-sm lg:text-2xl"
+                className="text- lg:text-2xl"
                 custom={21}
               >
                 searches and any
@@ -300,7 +300,7 @@ function ColorLetters({
 
               <motion.p
                 variants={fadeInVariant}
-                className="text-sm lg:text-2xl"
+                className="text- lg:text-2xl"
                 custom={23}
               >
                 used.
@@ -312,7 +312,7 @@ function ColorLetters({
             <>
               <motion.p
                 variants={fadeInVariant}
-                className="text-sm lg:text-2xl"
+                className="text- lg:text-2xl"
                 custom={24}
               >
                 Finally in your chat we found that
@@ -334,7 +334,7 @@ function ColorLetters({
 
               <motion.p
                 variants={fadeInVariant}
-                className="text-sm lg:text-2xl"
+                className="text- lg:text-2xl"
                 custom={26}
               >
                 were included.
@@ -344,7 +344,7 @@ function ColorLetters({
             <>
               <motion.p
                 variants={fadeInVariant}
-                className="text-sm lg:text-2xl"
+                className="text- lg:text-2xl"
                 custom={27}
               >
                 We also did not find any
@@ -364,7 +364,7 @@ function ColorLetters({
 
               <motion.p
                 variants={fadeInVariant}
-                className="text-sm lg:text-2xl"
+                className="text- lg:text-2xl"
                 custom={29}
               >
                 included
@@ -373,7 +373,8 @@ function ColorLetters({
           )}
         </div>
       </motion.div>
-      <Button className="text-sm lg:text-2xl p-2" onClick={handleOnReset}>
+
+      <Button className="text- lg:text-2xl p-2" onClick={handleOnReset}>
         Reset
       </Button>
     </div>
