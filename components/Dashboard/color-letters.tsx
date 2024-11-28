@@ -47,8 +47,8 @@ function ColorLetters({
   return (
     <div
       className={cn(
-        "flex flex-col justify-center items-center gap-3 ",
-        className ? className : "w-6/12"
+        "flex flex-col justify-center items-center gap- lg:gap-3 ",
+        className ? className : "w-11/12 lg:w-6/12"
       )}
     >
       <motion.div
@@ -61,7 +61,7 @@ function ColorLetters({
       >
         <motion.p
           variants={fadeInVariant}
-          className="text-4xl  underline underline-offset-2"
+          className="text-md lg:text-4xl  underline underline-offset-2"
           custom={0}
         >
           {sessionInfo.Title}{" "}
@@ -71,94 +71,142 @@ function ColorLetters({
             "flex items-center gap-2 w/12 flex-wrap justify-center w-full border-2 border-dashed border-gray-200 rounded-lg p-8"
           )}
         >
-          <motion.p variants={fadeInVariant} className="text-2xl" custom={1}>
+          <motion.p
+            variants={fadeInVariant}
+            className="text-sm lg:text-2xl"
+            custom={1}
+          >
             In this chat you made{" "}
           </motion.p>
 
           <motion.div
-            className="flex items-center gap-2"
+            className="flex items-center gap-0 lg:gap-2"
             variants={fadeInVariant}
             custom={2}
           >
-            <RiSpeakLine size={40} className="text-[#E23670]" />
-            <p className="text-4xl text-[#E23670]">
+            <RiSpeakLine
+              size={40}
+              className="text-[#E23670] scale-50 lg:scale-100"
+            />
+            <p className="text-md lg:text-4xl text-[#E23670]">
               {globalStatistics.questions} questions
             </p>
           </motion.div>
 
-          <motion.p variants={fadeInVariant} className="text-2xl" custom={3}>
+          <motion.p
+            variants={fadeInVariant}
+            className="text-sm lg:text-2xl"
+            custom={3}
+          >
             and Chat-GPT need
           </motion.p>
 
-          <motion.p variants={fadeInVariant} className="text-2xl" custom={4}>
+          <motion.p
+            variants={fadeInVariant}
+            className="text-sm lg:text-2xl"
+            custom={4}
+          >
             to create
           </motion.p>
 
           <motion.div
-            className="flex items-center gap-2"
+            className="flex items-center gap-0 lg:gap-2"
             variants={fadeInVariant}
             custom={5}
           >
-            <IoInformationCircleOutline size={40} className="text-[#AF57DB]" />
-            <p className="text-4xl text-[#AF57DB]">
+            <IoInformationCircleOutline
+              size={40}
+              className="scale-50 lg:scale-1 text-[#AF57DB]"
+            />
+            <p className="text-md lg:text-4xl text-[#AF57DB]">
               {globalStatistics.responses} responses
             </p>
           </motion.div>
 
-          <motion.p variants={fadeInVariant} className="text-2xl" custom={6}>
+          <motion.p
+            variants={fadeInVariant}
+            className="text-sm lg:text-2xl"
+            custom={6}
+          >
             in order to answer your questions.
           </motion.p>
 
-          <motion.p variants={fadeInVariant} className="text-2xl" custom={7}>
+          <motion.p
+            variants={fadeInVariant}
+            className="text-sm lg:text-2xl"
+            custom={7}
+          >
             In Responces we found
           </motion.p>
 
           <motion.div
-            className="flex items-center gap-2"
+            className="flex items-center gap-0 lg:gap-2"
             variants={fadeInVariant}
             custom={8}
           >
-            <GrSystem size={40} className="text-[#E88C30]" />
-            <p className="text-4xl text-[#E88C30]">
+            <GrSystem
+              size={40}
+              className="scale-50 lg:scale-1 text-[#E88C30]"
+            />
+            <p className="text-md lg:text-4xl text-[#E88C30]">
               {globalStatistics.systemCount} System
             </p>
           </motion.div>
 
-          <motion.p variants={fadeInVariant} className="text-2xl" custom={9}>
+          <motion.p
+            variants={fadeInVariant}
+            className="text-sm lg:text-2xl"
+            custom={9}
+          >
             commands,
           </motion.p>
 
           <motion.div
-            className="flex items-center gap-2"
+            className="flex items-center gap-0 lg:gap-2"
             variants={fadeInVariant}
             custom={10}
           >
-            <MdSupportAgent size={40} className="text-[#2EB88A]" />
-            <p className="text-4xl text-[#2EB88A]">
+            <MdSupportAgent
+              size={40}
+              className="scale-50 lg:scale-1 text-[#2EB88A]"
+            />
+            <p className="text-md lg:text-4xl text-[#2EB88A]">
               {globalStatistics.assistant} Assistant
             </p>
           </motion.div>
 
-          <motion.p variants={fadeInVariant} className="text-2xl" custom={11}>
+          <motion.p
+            variants={fadeInVariant}
+            className="text-sm lg:text-2xl"
+            custom={11}
+          >
             commands and
           </motion.p>
 
           <motion.div
-            className="flex items-center gap-2"
+            className="flex items-center gap-0 lg:gap-2"
             variants={fadeInVariant}
             custom={12}
           >
-            <FiTool size={40} className="text-[#2662D9]" />
-            <p className="text-4xl text-[#2662D9]">
+            <FiTool size={40} className="scale-50 lg:scale-1 text-[#2662D9]" />
+            <p className="text-md lg:text-4xl text-[#2662D9]">
               {globalStatistics.toolsCalled} Tools
             </p>
           </motion.div>
 
-          <motion.p variants={fadeInVariant} className="text-2xl" custom={13}>
+          <motion.p
+            variants={fadeInVariant}
+            className="text-sm lg:text-2xl"
+            custom={13}
+          >
             usages.
           </motion.p>
 
-          <motion.p variants={fadeInVariant} className="text-2xl" custom={14}>
+          <motion.p
+            variants={fadeInVariant}
+            className="text-sm lg:text-2xl"
+            custom={14}
+          >
             Also for your question we
           </motion.p>
 
@@ -166,7 +214,7 @@ function ColorLetters({
             <>
               <motion.p
                 variants={fadeInVariant}
-                className="text-2xl"
+                className="text-sm lg:text-2xl"
                 custom={15}
               >
                 we found that Chat-Gpt used
@@ -177,15 +225,18 @@ function ColorLetters({
                 variants={fadeInVariant}
                 custom={16}
               >
-                <TbWorldWww size={40} className="text-[#E8D330]" />
-                <p className="text-4xl text-[#E8D330]">
+                <TbWorldWww
+                  size={40}
+                  className="scale-50 lg:scale-1 text-[#E8D330]"
+                />
+                <p className="text-md lg:text-4xl text-[#E8D330]">
                   {globalStatistics.webSearches} online searches
                 </p>
               </motion.div>
 
               <motion.p
                 variants={fadeInVariant}
-                className="text-2xl"
+                className="text-sm lg:text-2xl"
                 custom={17}
               >
                 and
@@ -196,8 +247,11 @@ function ColorLetters({
                 variants={fadeInVariant}
                 custom={18}
               >
-                <GiBookmark size={40} className="text-[#32CB89]" />
-                <p className="text-4xl text-[#32CB89]">
+                <GiBookmark
+                  size={40}
+                  className="scale-50 lg:scale-1 text-[#32CB89]"
+                />
+                <p className="text-md lg:text-4xl text-[#32CB89]">
                   {globalStatistics.citations} citations
                 </p>
               </motion.div>
@@ -206,7 +260,7 @@ function ColorLetters({
             <>
               <motion.p
                 variants={fadeInVariant}
-                className="text-2xl"
+                className="text-sm lg:text-2xl"
                 custom={19}
               >
                 we found that GPT did not use any
@@ -217,13 +271,16 @@ function ColorLetters({
                 variants={fadeInVariant}
                 custom={20}
               >
-                <TbWorldWww size={40} className="text-[#E8D330]" />
-                <p className="text-4xl text-[#E8D330] "> online</p>
+                <TbWorldWww
+                  size={40}
+                  className="scale-50 lg:scale-1 text-[#E8D330]"
+                />
+                <p className="text-md lg:text-4xl text-[#E8D330] "> online</p>
               </motion.div>
 
               <motion.p
                 variants={fadeInVariant}
-                className="text-2xl"
+                className="text-sm lg:text-2xl"
                 custom={21}
               >
                 searches and any
@@ -234,13 +291,16 @@ function ColorLetters({
                 variants={fadeInVariant}
                 custom={22}
               >
-                <GiBookmark size={40} className="text-gray-400" />
-                <p className="text-4xl text-gray-400">citations</p>
+                <GiBookmark
+                  size={40}
+                  className="scale-50 lg:scale-1 text-gray-400"
+                />
+                <p className="text-md lg:text-4xl text-gray-400">citations</p>
               </motion.div>
 
               <motion.p
                 variants={fadeInVariant}
-                className="text-2xl"
+                className="text-sm lg:text-2xl"
                 custom={23}
               >
                 used.
@@ -252,7 +312,7 @@ function ColorLetters({
             <>
               <motion.p
                 variants={fadeInVariant}
-                className="text-2xl"
+                className="text-sm lg:text-2xl"
                 custom={24}
               >
                 Finally in your chat we found that
@@ -267,14 +327,14 @@ function ColorLetters({
                   size={40}
                   className="text-[#E88C30]"
                 />
-                <p className="text-4xl text-[#E23670]">
+                <p className="text-md lg:text-4xl text-[#E23670]">
                   {globalStatistics.images} Images
                 </p>
               </motion.div>
 
               <motion.p
                 variants={fadeInVariant}
-                className="text-2xl"
+                className="text-sm lg:text-2xl"
                 custom={26}
               >
                 were included.
@@ -284,7 +344,7 @@ function ColorLetters({
             <>
               <motion.p
                 variants={fadeInVariant}
-                className="text-2xl"
+                className="text-sm lg:text-2xl"
                 custom={27}
               >
                 We also did not find any
@@ -297,14 +357,14 @@ function ColorLetters({
               >
                 <MdOutlinePhotoSizeSelectActual
                   size={40}
-                  className="text-[#E23670]"
+                  className="scale-50 lg:scale-100 text-[#E23670]"
                 />
-                <p className="text-4xl text-[#E23670]">images</p>
+                <p className="text-md lg:text-4xl text-[#E23670]">images</p>
               </motion.div>
 
               <motion.p
                 variants={fadeInVariant}
-                className="text-2xl"
+                className="text-sm lg:text-2xl"
                 custom={29}
               >
                 included
@@ -313,7 +373,7 @@ function ColorLetters({
           )}
         </div>
       </motion.div>
-      <Button className="text-2xl p-2" onClick={handleOnReset}>
+      <Button className="text-sm lg:text-2xl p-2" onClick={handleOnReset}>
         Reset
       </Button>
     </div>

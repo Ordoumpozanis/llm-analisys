@@ -28,7 +28,7 @@ const ChartAnalisys = ({
     >
       <ColorLetters
         globalStatistics={globalStatistics}
-        className="w-6/12"
+        className="w-full md:w-6/12 px-5 md:px-0"
         onReset={handleOnReset}
         sessionInfo={sessionInfo}
       />

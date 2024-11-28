@@ -45,6 +45,8 @@ interface StatisticsAndReferences {
     webSearches: number;
     citations: number;
     images: number;
+    userTokens?: number;
+    systemTokens?: number;
   };
   references: Reference[];
 }
@@ -69,6 +71,8 @@ interface GlobalStatistics {
   webSearches: number;
   citations: number;
   images: number;
+  systemTokens: number;
+  userTokens: number;
 }
 
 /**
@@ -415,6 +419,15 @@ export class GptScrapper {
             currentQuestion.statistics = statsAndRefs.statistics;
             currentQuestion.references = statsAndRefs.references;
 
+            const userTokens = currentQuestion?.user?.content?.parts[0];
+            if (userTokens && userTokens !== "") {
+              const number = parseInt(userTokens);
+              currentQuestion.statistics = {
+                ...currentQuestion.statistics,
+                userTokens: number,
+              };
+            }
+
             // Save the previous question and its responses
             organizedMessages.push(currentQuestion);
           }
@@ -468,6 +481,8 @@ export class GptScrapper {
     let webSearches = 0;
     let citationCount = 0;
     let imageCount = 0;
+    let systemTokens = 0;
+
     const references: Reference[] = [];
 
     responses.forEach((response) => {
@@ -483,6 +498,14 @@ export class GptScrapper {
 
       if (response.author?.role === "system") {
         systemCount++;
+      }
+
+      if (
+        response.content?.parts?.[0] !== "" &&
+        response.content?.parts?.[0] !== undefined
+      ) {
+        const newTOkens = parseInt(response.content.parts[0]);
+        systemTokens = systemTokens + newTOkens || systemTokens;
       }
 
       // Count valid search_result_groups
@@ -527,6 +550,7 @@ export class GptScrapper {
         webSearches: webSearches,
         citations: citationCount,
         images: imageCount,
+        systemTokens: systemTokens,
       },
       references,
     };
@@ -562,6 +586,8 @@ export class GptScrapper {
       webSearches: 0,
       citations: 0,
       images: 0,
+      systemTokens: 0,
+      userTokens: 0,
     };
 
     parsedMessages.forEach((entry) => {
@@ -577,6 +603,8 @@ export class GptScrapper {
         globalStats.webSearches += entry.statistics.webSearches || 0;
         globalStats.citations += entry.statistics.citations || 0;
         globalStats.images += entry.statistics.images || 0;
+        globalStats.systemTokens += entry.statistics.systemTokens || 0;
+        globalStats.userTokens += entry.statistics.userTokens || 0;
       }
     });
 
@@ -709,8 +737,6 @@ export class GptScrapper {
   }): Promise<{ status: boolean; data?: string; error?: string }> {
     try {
       const { minimize = false, data, session } = params;
-
-      console.log("WORKER __ DATA =", data);
 
       if (!data) return { status: false, error: "No data provided" };
 

@@ -185,7 +185,7 @@ const NewUrlForm = ({
         onError?.("Failed to tokenize messages: " + tokenized.error);
         return;
       }
-      console.log("3. Token created", tokenized.data);
+      console.log("3. Token created");
 
       // step 4: orginizeJSON
       const oginizedResult = await analize.current.orginizeJSON({
@@ -198,7 +198,8 @@ const NewUrlForm = ({
       if (status == false) {
         onError?.(error as string);
       }
-      console.log("4. Statistics created");
+
+      console.log("4. Statistics created", JSON.parse(data as string));
       onResult(JSON.parse(data as string));
 
       // console.log("Sending to worker...");
