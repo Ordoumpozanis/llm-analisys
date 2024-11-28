@@ -98,7 +98,78 @@ export class GptScrapper {
    * @param config - Configuration options for GptScrapper.
    */
 
-  constructor() {}
+  private tokenWorker: Worker | null = null;
+  private workerInitialized: boolean;
+
+  constructor() {
+    this.initializeWorker();
+    this.workerInitialized = false;
+  }
+
+  /**
+   * Assigns an externally initialized worker to the class.
+   * @param worker - The externally initialized worker instance.
+   */
+  public initializeWorker() {
+    if (this.workerInitialized) {
+      return;
+    }
+
+    try {
+      this.tokenWorker = new Worker(
+        new URL("../public/workers/getContent-worker.js", import.meta.url)
+      );
+      this.workerInitialized = true;
+      console.log("Token worker SetUp");
+    } catch (error) {
+      console.error("Error initializing worker:", error);
+    }
+  }
+
+  /**
+   * Terminates the worker when the instance is destroyed.
+   */
+  public terminateWorker() {
+    if (this.tokenWorker) {
+      this.tokenWorker.terminate();
+      this.tokenWorker = null;
+      console.log("Token worker terminated");
+    }
+  }
+  /**
+   * Processes a message using the token-worker.
+   * @param message - The message to process.
+   * @param length - Whether to return token length or tokens themselves.
+   * @returns A promise that resolves with the processed message or rejects with an error.
+   */
+  private processMessageWithWorker(
+    message: any,
+    length: boolean = true
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (!this.tokenWorker) {
+        reject("Token worker is not initialized.");
+        return; // Ensure the function stops execution here
+      }
+
+      this.tokenWorker.onmessage = (e) => {
+        const { success, data, error } = e.data;
+        if (success) {
+          resolve(data);
+        } else {
+          reject(error || "An error occurred in the token worker");
+        }
+      };
+
+      this.tokenWorker.onerror = (err) => {
+        console.error("TokenWorker encountered an error:", err);
+        reject("Worker error");
+      };
+
+      // Post the message data to the worker
+      this.tokenWorker.postMessage({ message, modelName: "gpt-4", length });
+    });
+  }
 
   /**
    * Helper method to create an error result.
@@ -233,6 +304,8 @@ export class GptScrapper {
       const traverse = async (obj: any): void => {
         if (obj && typeof obj === "object") {
           if ("message" in obj) {
+            const test = await this.processMessageWithWorker(obj.message, true);
+            console.log(test);
             messages.push(obj.message);
           }
 
@@ -640,14 +713,12 @@ export class GptScrapper {
    * @param params - An object containing the URL and flags for various operations.
    * @returns An object indicating the overall success status and any error encountered.
    */
-  public async createJSON(params: { processResult: string }): Promise<{
-    status: boolean;
-    data?: string;
-    error?: string;
-    session?: string;
-  }> {
+  public async readChatFrontEnd(params: {
+    minimize?: boolean;
+    processResult: string;
+  }): Promise<{ status: boolean; data?: string; error?: string }> {
     try {
-      const { processResult } = params;
+      const { minimize = false, processResult } = params;
 
       // Step 1: Extract Server Response
       const extracted = await this.extractServerResponse({
@@ -671,7 +742,6 @@ export class GptScrapper {
       const messages = this.extractMessagesFromJSON({
         json: extracted.data,
       });
-
       if (!messages.success || !messages.data) {
         console.error("Failed to extract messages from JSON. Exiting.");
 
@@ -681,42 +751,9 @@ export class GptScrapper {
         };
       }
 
-      return {
-        status: true,
-        data: messages.data, // Only returning the stringified content
-        session: JSON.stringify(sessionInfo),
-      };
-    } catch (error: unknown) {
-      console.error("createJSON error", error);
-
-      return {
-        status: false,
-        error: "Unknown error calculating global statistics.", // Only returning the stringified content
-      };
-    }
-  }
-
-  /**
-   * Reads a chat from a URL, processes and cleans its HTML, extracts data, and saves the results.
-   * This is the only public method accessible externally.
-   * @param params - An object containing the URL and flags for various operations.
-   * @returns An object indicating the overall success status and any error encountered.
-   */
-  public async orginizeJSON(params: {
-    minimize?: boolean;
-    data: string;
-    session: string;
-  }): Promise<{ status: boolean; data?: string; error?: string }> {
-    try {
-      const { minimize = false, data, session } = params;
-
-      console.log("WORKER __ DATA =", data);
-
-      if (!data) return { status: false, error: "No data provided" };
-
       // Step 4: Minimize Messages (optional)
       const minimized = this.minimizeMessagesFromJSON({
-        json: data,
+        json: messages.data,
         minimized: minimize,
       });
       if (!minimized.success || !minimized.data) {
@@ -744,7 +781,7 @@ export class GptScrapper {
       // Step 6: Calculate Global Statistics
       const globalStats = this.globalStatistics({
         json: organized.data,
-        sessionInfo: JSON.parse(session),
+        sessionInfo: sessionInfo,
       });
 
       if (!globalStats || !globalStats.content) {

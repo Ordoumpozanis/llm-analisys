@@ -15,8 +15,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { getHtml } from "@/actions//getTheHtml";
+import { GptScrapper } from "@/lib/gptAnalisysFront";
 
 const formSchema = z.object({
   url: z.string().min(10, {
@@ -44,25 +45,57 @@ const NewUrlForm = ({
   onResult,
   onError,
 }: UrlFormProps) => {
-  const [mainWorker, setmainWorker] = useState<Worker>(null);
+  const tokenWorker = useRef<Worker | null>(null);
+  const analize = useRef<GptScrapper>(new GptScrapper());
+  // State to track progress
+  const [progress, setProgress] = useState(0);
 
   // innitialize the workers
   useEffect(() => {
-    console.log("Initializing worker...");
-    const mainWorker = new Worker(
-      new URL("../../public/workers/getContent-worker.js", import.meta.url)
-    );
-    // const tokenWorker = new Worker(
-    //   new URL("../../public/workers/token-worker.js", import.meta.url)
-    // );
+    try {
+      if (tokenWorker.current) return;
+      console.log("Initializing worker...");
+      const worker = new Worker(
+        new URL("../../public/workers/token-worker.js", import.meta.url)
+      );
 
-    setmainWorker(mainWorker);
+      // Handle messages from the worker
+      worker.onmessage = (event) => {
+        const { progress: prog, success, data, error } = event.data;
 
-    return () => {
-      // Do not terminate the worker immediately; only when it's no longer needed
-      console.log("Worker instance cleanup.");
-    };
-  }, []);
+        if (prog !== undefined) {
+          // Handle progress update
+          setProgress(prog);
+        } else if (success) {
+          // Handle final processed messages
+          onResult({
+            messages: data, // Adjust according to your data structure
+            globalStatistics: {}, // Populate as needed
+            sessionInfo: {}, // Populate as needed
+          });
+        } else if (error) {
+          // Handle error from worker
+          console.error("Worker processing failed:", error);
+          onError?.("Worker processing failed: " + error);
+        }
+      };
+
+      worker.onerror = (error) => {
+        console.error("Worker encountered an error:", error);
+        onError?.("Worker encountered an error");
+      };
+
+      tokenWorker.current = worker;
+      console.log("Worker initialized!");
+
+      return () => {
+        // Do not terminate the worker immediately; only when it's no longer needed
+        console.log("Worker instance cleanup.");
+      };
+    } catch (error) {
+      console.error("Worker initialization failed:", error);
+    }
+  }, [onResult, onError]);
 
   // setup the form
   const form = useForm<z.infer<typeof formSchema>>({
@@ -72,9 +105,54 @@ const NewUrlForm = ({
     },
   });
 
+  // Updated findParts function to send array of messages
+  const findParts = async ({ length = true, dataJson }) => {
+    return new Promise<{ status: boolean; data?: string; error?: any }>(
+      (resolve, reject) => {
+        const worker = tokenWorker.current;
+        if (!worker) {
+          reject(new Error("Worker instance is not available"));
+          return;
+        }
+
+        // Listen for the final response or error
+        const handleMessage = (event) => {
+          const { progress: prog, success, data, error } = event.data;
+
+          if (prog !== undefined) {
+            // Update progress
+            setProgress(prog);
+          } else if (success) {
+            // Final data received
+            worker.removeEventListener("message", handleMessage);
+            resolve({ status: true, data });
+          } else if (error) {
+            // Error from worker
+            worker.removeEventListener("message", handleMessage);
+            resolve({ status: false, error });
+          }
+        };
+
+        worker.addEventListener("message", handleMessage);
+
+        // Send the array of messages to the worker
+        try {
+          const messages = JSON.parse(dataJson.data as string);
+          worker.postMessage({
+            messages,
+            length,
+          });
+        } catch (err) {
+          worker.removeEventListener("message", handleMessage);
+          reject(err);
+        }
+      }
+    );
+  };
+
   // Handle form submission
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!mainWorker) {
+    if (!tokenWorker.current) {
       console.error("Workers not found");
       return;
     }
@@ -82,31 +160,64 @@ const NewUrlForm = ({
     onReset?.();
 
     try {
+      //1. get html
       const result = await getHtml({ url: values.url });
       if (!result.success || !result.chatData) {
         onError?.("Failed to fetch content from the server");
         return;
       }
-
       const fetchedContent = result.chatData;
+      console.log("1. Data fetched");
+      // step 2: createJSON
+      const dataJson = await analize.current.createJSON({
+        processResult: fetchedContent,
+      });
 
-      console.log("Sending to worker...");
-      mainWorker.postMessage({ content: fetchedContent });
+      if (dataJson.status === false) {
+        onError?.(dataJson.error as string);
+        return;
+      }
+      console.log("2. JSON made");
 
-      mainWorker.onmessage = (e) => {
-        const { success, data, error } = e.data;
-        if (success) {
-          console.log("Received data from worker:", data);
-          onResult(data);
-        } else {
-          onError?.(error || "An error occurred during processing");
-        }
-      };
+      // 3. Tokenize messages using the worker
+      const tokenized = await findParts({ length: true, dataJson });
+      if (!tokenized.status) {
+        onError?.("Failed to tokenize messages: " + tokenized.error);
+        return;
+      }
+      console.log("3. Token created", tokenized.data);
 
-      mainWorker.onerror = (err) => {
-        console.error("Worker encountered an error:", err);
-        onError?.("Worker error");
-      };
+      // step 4: orginizeJSON
+      const oginizedResult = await analize.current.orginizeJSON({
+        data: JSON.stringify(tokenized.data),
+        minimize: false,
+        session: dataJson.session as string,
+      });
+
+      const { status, data, error } = oginizedResult;
+      if (status == false) {
+        onError?.(error as string);
+      }
+      console.log("4. Statistics created");
+      onResult(JSON.parse(data as string));
+
+      // console.log("Sending to worker...");
+      // mainWorker.postMessage({ content: fetchedContent });
+
+      // mainWorker.onmessage = (e) => {
+      //   const { success, data, error } = e.data;
+      //   if (success) {
+      //     console.log("Received data from worker:", data);
+      //     onResult(data);
+      //   } else {
+      //     onError?.(error || "An error occurred during processing");
+      //   }
+      // };
+
+      // mainWorker.onerror = (err) => {
+      //   console.error("Worker encountered an error:", err);
+      //   onError?.("Worker error");
+      // };
     } catch (error) {
       console.error("Error during submission:", error);
       onError?.("Unexpected error occurred");
