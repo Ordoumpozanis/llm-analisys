@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -97,6 +98,9 @@ const NewUrlForm = ({
     }
   }, [onResult, onError]);
 
+  useEffect(() => {
+    console.log("progress", progress);
+  }, [progress]);
   // setup the form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -106,7 +110,14 @@ const NewUrlForm = ({
   });
 
   // Updated findParts function to send array of messages
-  const findParts = async ({ length = true, dataJson }) => {
+
+  const findParts = async ({
+    length = true,
+    dataJson,
+  }: {
+    length?: boolean;
+    dataJson: any;
+  }) => {
     return new Promise<{ status: boolean; data?: string; error?: any }>(
       (resolve, reject) => {
         const worker = tokenWorker.current;
@@ -116,7 +127,7 @@ const NewUrlForm = ({
         }
 
         // Listen for the final response or error
-        const handleMessage = (event) => {
+        const handleMessage = (event: any) => {
           const { progress: prog, success, data, error } = event.data;
 
           if (prog !== undefined) {
@@ -199,7 +210,7 @@ const NewUrlForm = ({
         onError?.(error as string);
       }
 
-      console.log("4. Statistics created", JSON.parse(data as string));
+      console.log("4. Statistics created");
       onResult(JSON.parse(data as string));
 
       // console.log("Sending to worker...");

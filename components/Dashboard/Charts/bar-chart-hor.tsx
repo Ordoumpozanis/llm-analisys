@@ -125,10 +125,13 @@ export function BarChartHor({
                 tickLine={false}
                 axisLine={false}
                 tickMargin={10}
-                tickFormatter={(value) =>
-                  chartConfig[value as keyof typeof chartConfig]?.label
-                }
+                tickFormatter={(value) => {
+                  const label =
+                    chartConfig[value as keyof typeof chartConfig]?.label;
+                  return label ? String(label) : ""; // Ensure the result is always a string
+                }}
               />
+
               <Tooltip
                 content={<ChartTooltipContent hideLabel />}
                 cursor={false}

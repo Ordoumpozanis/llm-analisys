@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 // GptScrapper.ts
 import JSON5 from "json5";
@@ -234,7 +236,7 @@ export class GptScrapper {
        * @param obj - The current object being traversed.
        */
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const traverse = async (obj: any): void => {
+      const traverse = (obj: any): void => {
         if (obj && typeof obj === "object") {
           if ("message" in obj) {
             messages.push(obj.message);
@@ -308,7 +310,8 @@ export class GptScrapper {
       } else if (obj && typeof obj === "object") {
         return (
           Object.entries(obj)
-            .filter(([_, value]) => value !== null)
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            .filter(([, value]) => value !== null)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .reduce((acc: any, [key, value]) => {
               acc[key] = removeNulls(value);
@@ -513,9 +516,9 @@ export class GptScrapper {
         webSearches += response.metadata.search_result_groups.length;
 
         // Traverse search_result_groups and collect citations with valid titles
-        response.metadata.search_result_groups.forEach((group) => {
+        response.metadata.search_result_groups.forEach((group: any) => {
           if (Array.isArray(group.entries)) {
-            group.entries.forEach((entry) => {
+            group.entries.forEach((entry: any) => {
               if (entry?.title && entry.title.trim() !== "") {
                 citationCount++;
                 references.push({
@@ -530,7 +533,7 @@ export class GptScrapper {
 
       // Count image asset pointers
       if (Array.isArray(response.content?.parts)) {
-        response.content.parts.forEach((part) => {
+        response.content.parts.forEach((part: any) => {
           if (
             part?.content_type === "image_asset_pointer" &&
             part.asset_pointer
