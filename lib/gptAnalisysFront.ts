@@ -434,6 +434,7 @@ export class GptScrapper {
             // Save the previous question and its responses
             organizedMessages.push(currentQuestion);
           }
+
           // Initialize a new question with the user message
           currentQuestion = { user: message, response: [] };
         } else if (currentQuestion) {

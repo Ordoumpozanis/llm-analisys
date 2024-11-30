@@ -31,7 +31,6 @@ const processWithTimeout = (
 ) => {
   return new Promise((resolve) => {
     const timer = setTimeout(() => {
-      console.warn(`Processing message ${messageNumber} timed out.`);
       resolve(message); // Return original message on timeout
     }, timeout);
 
@@ -66,12 +65,6 @@ const processObject = async (message, length = true, messageNumber) => {
     const tokens = encoder.encode(`${authorPart}`);
     // Update the message with either token length or tokens
     message.content.parts[0] = length ? tokens.length : tokens;
-    console.log(
-      "Message processed successfully.",
-      messageNumber,
-      "tokens=",
-      tokens.length
-    );
   } catch {
     // If encoding fails, return the original message
     return message;

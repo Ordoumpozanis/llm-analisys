@@ -32,8 +32,8 @@ interface DonutChartCenterProps {
   data: ChartDataItem[];
   centerValue: number;
   centerLabel: string;
-  footer1: string; // First line of footer
-  footer2: string; // Second line of footer
+  footer1: React.ReactNode; // First line of footer
+  footer2: React.ReactNode; // Second line of footer
   className?: string;
 }
 

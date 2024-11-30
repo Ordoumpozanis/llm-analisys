@@ -3,6 +3,9 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
+import { FloatingDock } from "@/components/ui/floating-dock";
+import { menuLInks } from "@/setup/menu-links";
+
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -27,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased w-screen h-screen`}
       >
         <ThemeProvider
           attribute="class"
@@ -35,7 +38,28 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          {/* desktop layout */}
+          <div className="hidden lg:flex flex-col h-screen overflow-hidden">
+            {/* Top div fills the remaining space */}
+            <div className="flex-grow overflow-y-auto">{children}</div>
+
+            {/* Bottom div with fixed height */}
+            <div className="h-[80px]">
+              <FloatingDock items={menuLInks} desktopClassName="w-fit" />
+            </div>
+          </div>
+
+          {/* mobile layout */}
+          <div className="flex flex-col lg:hidden h-screen">
+            {/* Top div fills the remaining space */}
+            <div className="flex-grow">{children}</div>
+
+            <FloatingDock
+              items={menuLInks}
+              mobileClassName="absolute top-10 right-10 w-fit h-fit"
+            />
+          </div>
+
           <Toaster position="top-center" />
         </ThemeProvider>
       </body>

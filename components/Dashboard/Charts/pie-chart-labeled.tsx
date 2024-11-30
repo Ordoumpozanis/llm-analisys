@@ -21,8 +21,8 @@ interface PieChartLabeledProps {
   title: string;
   description: string;
   data: { name: string; value: number; color?: string }[]; // Color is optional
-  footer1: string; // Footer line 1
-  footer2: string; // Footer line 2
+  footer1: React.ReactNode; // Footer line 1
+  footer2: React.ReactNode; // Footer line 2
   className?: string;
 }
 

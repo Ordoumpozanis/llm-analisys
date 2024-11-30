@@ -79,7 +79,7 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
     <>
       <div
         className={cn(
-          "w-screen h-screen flex flex-col justify-center items-center gap-2",
+          "w-full h-full flex flex-col justify-center items-center gap-2 ",
           className
         )}
         {...props}
@@ -89,8 +89,8 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
           <NewUrlForm
             className="w-full"
             onReset={() => {
-              setLoading({ show: true, message: "Loading..." });
-              setNewSearch(false);
+              // setLoading({ show: true, message: "Loading..." });
+              // setNewSearch(false);
 
               // setMessages([]);
               setGlobalStatistics({
