@@ -98,10 +98,12 @@ const ChartAnalisys = ({
     },
   ];
 
-  const totalEnergy = Math.floor(
-    (globalStatistics.questions + globalStatistics.responses) * 0.048 +
+  const totalEnergy: number = parseFloat(
+    (
+      (globalStatistics.questions + globalStatistics.responses) * 0.048 +
       globalStatistics.images * 2.9 +
       globalStatistics.webSearches * 0.3
+    ).toFixed(2)
   );
 
   const energyDescription = findNearestExample(totalEnergy).text;
@@ -233,14 +235,14 @@ const ChartAnalisys = ({
               data={EnergyData}
               centerValue={totalEnergy}
               centerLabel={"Energy [Wh]"}
-              footer1={`User: ${Math.floor(
-                0.048 * globalStatistics.questions
+              footer1={`User: ${(0.048 * globalStatistics.questions).toFixed(
+                2
               )} [Wh]`}
-              footer2={`LLM: ${Math.floor(
+              footer2={`LLM: ${(
                 0.048 * globalStatistics.responses +
-                  2.9 * globalStatistics.images +
-                  0.3 * globalStatistics.webSearches
-              )} [Wh]`}
+                2.9 * globalStatistics.images +
+                0.3 * globalStatistics.webSearches
+              ).toFixed(2)} [Wh]`}
               className="w-full lg:w-1/4"
             />
           </div>
@@ -281,13 +283,13 @@ const ChartAnalisys = ({
                   consumption would be `}
                 </div>
                 <div className="w-full bg-gradient-to-br from-slate-300 to-green-600 py-4 bg-clip-text text-center text-md md:text-lg lg:text-xl font-medium tracking-tight text-transparent">
-                  {Math.floor(totalEnergy * 200)} [GWh]
+                  {Math.round(totalEnergy * 200)} [GWh]
                 </div>
                 <div className="text-sm prose dark:prose-invert lg:text-left leading-relaxed">
                   enough to power NEW YORK CITY for{" "}
                 </div>
                 <div className="w-full bg-gradient-to-br from-slate-300 to-green-600 py-4 bg-clip-text text-center text-md md:text-lg lg:text-xl font-medium tracking-tight text-transparent">
-                  {Math.floor((totalEnergy * 200) / 136)} days
+                  {((totalEnergy * 200) / 136).toFixed(2)} days
                 </div>
               </div>
 
