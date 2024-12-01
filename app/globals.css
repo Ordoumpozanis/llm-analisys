@@ -86,3 +86,34 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* styles/globals.css */
+@keyframes dash {
+  to {
+    stroke-dashoffset: 1000;
+  }
+}
+
+.animate-dash {
+  stroke-dasharray: 5, 5;
+  stroke-dashoffset: 0;
+  animation: dash 5s linear infinite;
+}
+
+.animated-edge .react-flow__edge-path {
+  stroke-dasharray: 5, 5;
+  animation: dash-animation 1.5s linear infinite;
+}
+
+@keyframes dash-animation {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+.markdown-container {
+  max-width: 380px;
+  word-wrap: break-word;
+  overflow-wrap: break-word; /* Ensures long words break to fit the container */
+  white-space: pre-wrap;
+}

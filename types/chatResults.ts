@@ -40,3 +40,8 @@ export type ChatAnalysisType = {
   globalStatistics: GlobalStatisticsType;
   sessionInfo: SessionInfoType;
 };
+
+export type ReferenceItemType = {
+  title: string;
+  url: string;
+};

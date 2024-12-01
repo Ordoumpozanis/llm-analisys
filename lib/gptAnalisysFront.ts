@@ -422,7 +422,7 @@ export class GptScrapper {
             currentQuestion.statistics = statsAndRefs.statistics;
             currentQuestion.references = statsAndRefs.references;
 
-            const userTokens = currentQuestion?.user?.content?.parts[0];
+            const userTokens = currentQuestion?.user?.content?.tokens;
             if (userTokens && userTokens !== "") {
               const number = parseInt(userTokens);
               currentQuestion.statistics = {
@@ -508,7 +508,7 @@ export class GptScrapper {
         response.content?.parts?.[0] !== "" &&
         response.content?.parts?.[0] !== undefined
       ) {
-        const newTOkens = parseInt(response.content.parts[0]);
+        const newTOkens = parseInt(response.content.tokens);
         systemTokens = systemTokens + newTOkens || systemTokens;
       }
 

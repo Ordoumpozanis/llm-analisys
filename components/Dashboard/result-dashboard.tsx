@@ -7,7 +7,7 @@ import {
   SessionInfoType,
 } from "@/types/chatResults";
 import { cn } from "@/lib/utils";
-import Spinner from "../spinner";
+import Spinner from "@/components/spinner";
 import ChartAnalisys from "./chart-analysis";
 import { toast } from "sonner";
 import { Toaster } from "../ui/toaster";
@@ -36,6 +36,9 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
     City: "",
     Title: "",
   });
+  // eslint-disable-line @typescript-eslint/no-explicit-any
+
+  const [messages, setMessages] = useState<any[]>([]); // eslint-disable-line @typescript-eslint/no-explicit-any
 
   const [newSearch, setNewSearch] = useState<boolean>(true);
 
@@ -79,7 +82,7 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
     <>
       <div
         className={cn(
-          "w-full h-full flex flex-col justify-center items-center gap-2 ",
+          "w-full h-full flex flex-col justify-center items-center gap-2 overflow-hidden",
           className
         )}
         {...props}
@@ -105,8 +108,12 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
                 userTokens: 0,
                 systemTokens: 0,
               });
+
+              setMessages([]);
             }}
-            onResult={({ messages, globalStatistics, sessionInfo }) => {
+            onResult={(data) => {
+              const { messages, globalStatistics, sessionInfo } = data;
+
               if (!messages || !globalStatistics) {
                 toast.error("Error: I could not fine chat data to analise.");
                 return;
@@ -115,6 +122,7 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
               // setMessages(Array.isArray(messages) ? messages : [messages]);
               setGlobalStatistics(globalStatistics);
               setSessionInfo(sessionInfo);
+              setMessages(messages);
 
               setNewSearch(false);
               setLoading({ show: false, message: "" });
@@ -125,9 +133,10 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
         {!newSearch && !loading.show && (
           <ChartAnalisys
             globalStatistics={globalStatistics}
+            messages={messages}
             sessionInfo={sessionInfo}
             onReset={handleOnReset}
-            className="w-full h-full"
+            className="w-full overflow-y-auto"
           />
         )}
         {loading.show && (

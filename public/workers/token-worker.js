@@ -27,14 +27,15 @@ const processWithTimeout = (
   message,
   length,
   messageNumber,
-  timeout = 10000
+  timeout = 10000,
+  removeText
 ) => {
   return new Promise((resolve) => {
     const timer = setTimeout(() => {
       resolve(message); // Return original message on timeout
     }, timeout);
 
-    processObject(message, length, messageNumber)
+    processObject(message, length, messageNumber, removeText)
       .then((processedMessage) => {
         clearTimeout(timer);
         resolve(processedMessage);
@@ -47,7 +48,12 @@ const processWithTimeout = (
 };
 
 // Helper function to process the object
-const processObject = async (message, length = true, messageNumber) => {
+const processObject = async (
+  message,
+  length = true,
+  messageNumber,
+  removeText
+) => {
   if (
     !message.content ||
     !message.content.parts ||
@@ -64,7 +70,8 @@ const processObject = async (message, length = true, messageNumber) => {
   try {
     const tokens = encoder.encode(`${authorPart}`);
     // Update the message with either token length or tokens
-    message.content.parts[0] = length ? tokens.length : tokens;
+    removeText && (message.content.parts[0] = "");
+    message.content.tokens = length ? tokens.length : tokens;
   } catch {
     // If encoding fails, return the original message
     return message;
@@ -81,7 +88,7 @@ const processObject = async (message, length = true, messageNumber) => {
 // Handle incoming messages to the worker
 self.onmessage = async (event) => {
   try {
-    const { messages, length } = event.data; // Expecting an array of messages and length flag
+    const { messages, length, removeText = true } = event.data; // Expecting an array of messages and length flag
 
     if (!Array.isArray(messages)) {
       throw new Error("Expected 'messages' to be an array.");
@@ -97,13 +104,15 @@ self.onmessage = async (event) => {
 
     // Create an array of promises with timeout handling
     const processingPromises = messages.map((message, index) =>
-      processWithTimeout(message, length, index + 1, 10000).then((result) => {
-        processedMessages[index] = result; // Maintain order
-        processedCount += 1;
-        const percentage = Math.round((processedCount / totalMessages) * 100);
-        // Send progress update to frontend
-        self.postMessage({ progress: percentage });
-      })
+      processWithTimeout(message, length, index + 1, 10000, removeText).then(
+        (result) => {
+          processedMessages[index] = result; // Maintain order
+          processedCount += 1;
+          const percentage = Math.round((processedCount / totalMessages) * 100);
+          // Send progress update to frontend
+          self.postMessage({ progress: percentage });
+        }
+      )
     );
 
     // Process all messages asynchronously

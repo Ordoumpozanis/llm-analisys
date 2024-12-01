@@ -41,7 +41,7 @@ export default function RootLayout({
           {/* desktop layout */}
           <div className="hidden lg:flex flex-col h-screen overflow-hidden">
             {/* Top div fills the remaining space */}
-            <div className="flex-grow overflow-y-auto">{children}</div>
+            <div className="flex-grow overflow-y-auto ">{children}</div>
 
             {/* Bottom div with fixed height */}
             <div className="h-[80px]">

@@ -77,6 +77,8 @@ const NewUrlForm = ({
     progress: 0,
     showProgress: false,
   });
+  // cleanup security data or not
+  const [cleandData] = useState<boolean>(false);
 
   function hideStatus() {
     setStatus({
@@ -108,7 +110,7 @@ const NewUrlForm = ({
     try {
       if (tokenWorker.current) return;
       showStatus(appIcons.settings, "Initializing...");
-      console.log("Initializing worker...");
+
       const worker = new Worker(
         new URL("../../public/workers/token-worker.js", import.meta.url)
       );
@@ -140,7 +142,6 @@ const NewUrlForm = ({
       };
 
       tokenWorker.current = worker;
-      console.log("Worker initialized!");
 
       setStatus({
         show: false,
@@ -151,7 +152,6 @@ const NewUrlForm = ({
       setinitiallised(true);
       return () => {
         // Do not terminate the worker immediately; only when it's no longer needed
-        console.log("Worker instance cleanup.");
       };
     } catch (error) {
       hideStatus();
@@ -176,7 +176,7 @@ const NewUrlForm = ({
     dataJson,
   }: {
     length?: boolean;
-    dataJson: any;
+    dataJson: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   }) => {
     return new Promise<{ status: boolean; data?: string; error?: any }>(
       (resolve, reject) => {
@@ -187,6 +187,8 @@ const NewUrlForm = ({
         }
 
         // Listen for the final response or error
+        // eslint-disable-line @typescript-eslint/no-explicit-any
+
         const handleMessage = (event: any) => {
           const { progress: prog, success, data, error } = event.data;
 
@@ -212,6 +214,7 @@ const NewUrlForm = ({
           worker.postMessage({
             messages,
             length,
+            removeText: cleandData,
           });
         } catch (err) {
           worker.removeEventListener("message", handleMessage);
@@ -271,7 +274,11 @@ const NewUrlForm = ({
       // 3. Tokenize messages using the worker
 
       showStatus(appIcons.encrypt, "Encrypt contnet...", true, progress);
-      const tokenized = await findParts({ length: true, dataJson });
+
+      const tokenized = await findParts({
+        length: true,
+        dataJson,
+      });
       if (!tokenized.status) {
         onError?.("Failed to tokenize messages: " + tokenized.error);
         return;
@@ -290,7 +297,7 @@ const NewUrlForm = ({
         onError?.(error as string);
       }
 
-      console.log("4. Statistics created", JSON.parse(data as string));
+      console.log("4. Statistics created");
       hideStatus();
       onResult(JSON.parse(data as string));
     } catch (error) {
