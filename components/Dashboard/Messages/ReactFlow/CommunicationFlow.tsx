@@ -40,8 +40,6 @@ const CommunicationFlow: React.FC<CommunicationFlowProps> = ({
     const { nodes, edges } = transformMessageToFlow(message);
     setNodes(nodes);
     setEdges(edges);
-
-    console.log("message", message, nodes);
   }, [message]);
 
   const onConnect = useCallback(

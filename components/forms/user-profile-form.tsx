@@ -27,7 +27,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "lucide-react";
 
 const businessCategories = [
   "Education (Schools, Training Centers, Tutors)",
@@ -57,9 +56,14 @@ const formSchema = z.object({
   chatType: z.enum(["personal", "business", "learning", "testing", "playing"], {
     required_error: "Please select the type of chat.",
   }),
-  chatPurpose: z.string().min(10, {
-    message: "Please provide a reason (at least 10 characters).",
-  }),
+  chatPurpose: z
+    .string()
+    .min(10, {
+      message: "Please provide a reason (at least 10 characters).",
+    })
+    .refine((val) => /^[a-zA-Z0-9 .]+$/.test(val), {
+      message: "Only letters, numbers, spaces, and periods are allowed.",
+    }),
   businessCategory: z.string().optional(),
   expertiseLevel: z.enum(["beginner", "medium", "advanced"], {
     required_error: "Please select your expertise level.",
@@ -78,14 +82,12 @@ type UserProfileFormProps = {
   formTrigger: React.ReactNode;
   className?: string;
   onFinish?: (data: FormData, submitted: boolean) => void;
-  alreadySubmitted?: boolean;
 };
 
 export default function UserProfileForm({
   formTrigger,
   className,
   onFinish,
-  alreadySubmitted,
 }: UserProfileFormProps) {
   const [isOther, setIsOther] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -112,7 +114,6 @@ export default function UserProfileForm({
 
   const onSubmit = async (data: FormData) => {
     try {
-      console.log("Form Data:", data);
       onFinish?.(data, true);
       // TODO: Implement server submission logic here.
     } catch (error) {
@@ -170,9 +171,11 @@ export default function UserProfileForm({
                       ? "bg-white border-green-500"
                       : "bg-red-500 border-red-500"
                   )}
-                  style={{
-                    "--switch-thumb-color": field.value ? "black" : "white", // Dynamically change the thumb color
-                  }}
+                  style={
+                    {
+                      "--switch-thumb-color": field.value ? "black" : "white", // Dynamically change the thumb color
+                    } as React.CSSProperties
+                  }
                 />
               )}
             />
@@ -318,10 +321,15 @@ export default function UserProfileForm({
                   {...field}
                   id="chatPurpose"
                   placeholder="Your reason..."
-                  className="w-full mt-2"
                   rows={3}
                   draggable={false}
-                  className="border-green-500"
+                  className="border-green-500 w-full mt-2"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^[a-zA-Z0-9 .]*$/.test(value)) {
+                      field.onChange(value); // Update field only if valid
+                    }
+                  }}
                 />
               )}
             />
@@ -345,7 +353,7 @@ export default function UserProfileForm({
             <ScrollArea className="h-48 border rounded-md mt-2">
               <ul>
                 {businessCategories.map((category) => {
-                  const [value, label] = category.split(" (");
+                  const [value] = category.split(" (");
                   return (
                     <li
                       key={value}
@@ -491,8 +499,8 @@ export default function UserProfileForm({
       content: (
         <div>
           <p className="mb-4">
-            Thank you for your time! Most of these questions won't be repeated
-            the next time you use this tool. Enjoy!
+            {` Thank you for your time! Most of these questions won't be repeated
+           the next time you use this tool. Enjoy!`}
           </p>
         </div>
       ),
@@ -528,7 +536,6 @@ export default function UserProfileForm({
     }
 
     const isValid = await trigger(fieldsToValidate);
-    console.log(`Validation for slide ${currentSlide}:`, isValid);
 
     // Navigate slides if valid
     if (isValid) {

@@ -28,14 +28,14 @@ const processWithTimeout = (
   length,
   messageNumber,
   timeout = 10000,
-  removeText
+  keepText
 ) => {
   return new Promise((resolve) => {
     const timer = setTimeout(() => {
       resolve(message); // Return original message on timeout
     }, timeout);
 
-    processObject(message, length, messageNumber, removeText)
+    processObject(message, length, messageNumber, keepText)
       .then((processedMessage) => {
         clearTimeout(timer);
         resolve(processedMessage);
@@ -52,7 +52,7 @@ const processObject = async (
   message,
   length = true,
   messageNumber,
-  removeText
+  keepText
 ) => {
   if (
     !message.content ||
@@ -70,7 +70,7 @@ const processObject = async (
   try {
     const tokens = encoder.encode(`${authorPart}`);
     // Update the message with either token length or tokens
-    removeText && (message.content.parts[0] = "");
+    !keepText && (message.content.parts[0] = "");
     message.content.tokens = length ? tokens.length : tokens;
   } catch {
     // If encoding fails, return the original message
@@ -88,7 +88,7 @@ const processObject = async (
 // Handle incoming messages to the worker
 self.onmessage = async (event) => {
   try {
-    const { messages, length, removeText = true } = event.data; // Expecting an array of messages and length flag
+    const { messages, length, keepText = false } = event.data; // Expecting an array of messages and length flag
 
     if (!Array.isArray(messages)) {
       throw new Error("Expected 'messages' to be an array.");
@@ -104,7 +104,7 @@ self.onmessage = async (event) => {
 
     // Create an array of promises with timeout handling
     const processingPromises = messages.map((message, index) =>
-      processWithTimeout(message, length, index + 1, 10000, removeText).then(
+      processWithTimeout(message, length, index + 1, 10000, keepText).then(
         (result) => {
           processedMessages[index] = result; // Maintain order
           processedCount += 1;

@@ -1,6 +1,5 @@
 // Home Component (page.tsx or Home.tsx)
 "use client";
-
 import { LampContainer } from "@/components/ui/lamp";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,9 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const saveUserData = useUserStore((state) => state.saveUserData);
   const isUserDataSaved = useUserStore((state) => state.isUserDataSaved);
-  const resetUserData = useUserStore((state) => state.resetUserData); // Import reset function
+  const resetUserData = useUserStore((state) => state.resetUserData);
+  const setAnalysed = useUserStore((state) => state.setAnalysed);
+  const updateUserData = useUserStore((state) => state.updateUserData);
   const router = useRouter();
 
   return (
@@ -64,11 +65,13 @@ export default function Home() {
                 </Button>
               }
               onFinish={(data, submitted) => {
-                console.log("ContentForm", data, submitted);
                 if (submitted) {
                   // Handle any additional logic after submitting ContentForm
-                  console.log("ContentForm submitted with data:", data);
 
+                  // update values in store
+                  updateUserData(data);
+                  //update store analyse state
+                  setAnalysed(false);
                   // Optionally navigate to another page or show a success message
                   router.push("/analyse");
                 }
@@ -85,14 +88,12 @@ export default function Home() {
                   Get Started
                 </Button>
               }
-              alreadySubmitted={isUserDataSaved} // Check if user data is already saved
               onFinish={(data, submitted) => {
-                console.log("UserProfileForm data", data);
                 if (submitted) {
                   // Save the user data to the Zustand store
                   saveUserData(data);
-                  console.log("User data saved:", data);
-
+                  //update store analyse state
+                  setAnalysed(false);
                   // Optionally navigate to another page or show a success message
                   router.push("/analyse");
                 }
@@ -125,7 +126,6 @@ export default function Home() {
             }}
             onClick={() => {
               resetUserData(); // Reset the store
-              console.log("User data has been reset.");
             }}
           >
             Crear my data

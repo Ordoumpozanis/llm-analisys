@@ -22,6 +22,7 @@ import { StatusDisplay } from "../status-display";
 import { appIcons } from "@/setup/app-icons";
 import { IconType } from "react-icons/lib";
 import { toast } from "sonner";
+import { useUserStore } from "@/stores/userStore";
 
 import {
   Dialog,
@@ -45,6 +46,7 @@ type UrlFormProps = {
   onResult: ({
     messages,
     globalStatistics,
+    sessionInfo,
   }: {
     messages: any; // Replace with proper type if available
     globalStatistics: any; // Replace with proper type if available
@@ -78,7 +80,7 @@ const NewUrlForm = ({
     showProgress: false,
   });
   // cleanup security data or not
-  const [cleandData] = useState<boolean>(false);
+  const userData = useUserStore((state) => state?.userData);
 
   function hideStatus() {
     setStatus({
@@ -117,18 +119,18 @@ const NewUrlForm = ({
 
       // Handle messages from the worker
       worker.onmessage = (event) => {
-        const { progress: prog, success, data, error } = event.data;
+        const { progress: prog, success, error } = event.data;
 
         if (prog !== undefined) {
           // Handle progress update
           // setProgress(prog);
         } else if (success) {
           // Handle final processed messages
-          onResult({
-            messages: data, // Adjust according to your data structure
-            globalStatistics: {}, // Populate as needed
-            sessionInfo: {}, // Populate as needed
-          });
+          // onResult({
+          //   messages: data, // Adjust according to your data structure
+          //   globalStatistics: {}, // Populate as needed
+          //   sessionInfo: {}, // Populate as needed
+          // });
         } else if (error) {
           // Handle error from worker
           console.error("Worker processing failed:", error);
@@ -214,7 +216,7 @@ const NewUrlForm = ({
           worker.postMessage({
             messages,
             length,
-            removeText: cleandData,
+            keepText: userData?.consent ?? false,
           });
         } catch (err) {
           worker.removeEventListener("message", handleMessage);
@@ -297,8 +299,9 @@ const NewUrlForm = ({
         onError?.(error as string);
       }
 
-      console.log("4. Statistics created");
       hideStatus();
+
+      // retun results
       onResult(JSON.parse(data as string));
     } catch (error) {
       console.error("Error during submission:", error);

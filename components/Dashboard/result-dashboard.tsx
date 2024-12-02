@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import NewUrlForm from "../forms/input-form";
 import {
   // MessagesType,
@@ -11,7 +11,10 @@ import Spinner from "@/components/spinner";
 import ChartAnalisys from "./chart-analysis";
 import { toast } from "sonner";
 import { Toaster } from "../ui/toaster";
-
+import { useRouter } from "next/navigation";
+import { useUserStore } from "@/stores/userStore";
+import { v4 as uuidv4 } from "uuid";
+import saveChat from "@/actions/saveResponse";
 interface DashboardProps {
   className?: string;
 }
@@ -47,8 +50,21 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
     message: "",
   });
 
+  const userData = useUserStore((state) => state.userData);
+  const setUuid = useUserStore((state) => state.setUuid);
+  const uuid = useUserStore((state) => state.uuid);
+
+  const analysed = useUserStore((state) => state.analysed);
+  const setAnalysed = useUserStore((state) => state.setAnalysed);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (analysed) {
+      router.push("/");
+    }
+  }, []);
+
   const handleOnReset = () => {
-    console.log("Resetting...");
     // setMessages([]);
     setGlobalStatistics({
       questions: 0,
@@ -111,7 +127,7 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
 
               setMessages([]);
             }}
-            onResult={(data) => {
+            onResult={async (data) => {
               const { messages, globalStatistics, sessionInfo } = data;
 
               if (!messages || !globalStatistics) {
@@ -124,8 +140,30 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
               setSessionInfo(sessionInfo);
               setMessages(messages);
 
+              const newUuid = uuidv4();
+              if (!uuid) {
+                setUuid(newUuid);
+              }
+
+              // create finale object
+              const toSave = {
+                messages: messages,
+                globalStatistics: globalStatistics,
+                sessionInfo: sessionInfo,
+                userData: { ...userData },
+                type: "General",
+                date: new Date().toISOString(),
+                uuid: uuid,
+              };
+
               setNewSearch(false);
               setLoading({ show: false, message: "" });
+
+              //update state
+              setAnalysed(true);
+
+              //save chat
+              await saveChat(JSON.stringify(toSave));
             }}
             onError={handleOnError}
           />

@@ -121,7 +121,6 @@ const ChartAnalisys = ({
   };
   const references: ReferenceItemType[] = messages[0].references;
 
-  console.log(messages);
   return (
     <div
       className={cn(

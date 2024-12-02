@@ -16,7 +16,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 import {
   Dialog,
@@ -35,9 +34,14 @@ const formSchema = z.object({
   chatType: z.enum(["personal", "business", "learning", "testing", "playing"], {
     required_error: "Please select the type of chat.",
   }),
-  chatPurpose: z.string().min(10, {
-    message: "Please provide a reason (at least 10 characters).",
-  }),
+  chatPurpose: z
+    .string()
+    .min(10, {
+      message: "Please provide a reason (at least 10 characters).",
+    })
+    .refine((val) => /^[a-zA-Z0-9 .]+$/.test(val), {
+      message: "Only letters, numbers, spaces, and periods are allowed.",
+    }),
 });
 
 // Infer the form data type from the schema
@@ -48,14 +52,12 @@ type ContentFormProps = {
   formTrigger: React.ReactNode;
   className?: string;
   onFinish?: (data: FormData, submitted: boolean) => void;
-  alreadySubmitted?: boolean;
 };
 
 export default function NewContentForm({
   formTrigger,
   className,
   onFinish,
-  alreadySubmitted,
 }: ContentFormProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,7 +66,6 @@ export default function NewContentForm({
     control,
     handleSubmit,
     watch,
-    setValue,
     trigger,
     formState: { errors },
   } = useForm<FormData>({
@@ -129,9 +130,11 @@ export default function NewContentForm({
                       ? "bg-white border-green-500"
                       : "bg-red-500 border-red-500"
                   )}
-                  style={{
-                    "--switch-thumb-color": field.value ? "black" : "white", // Dynamically change the thumb color
-                  }}
+                  style={
+                    {
+                      "--switch-thumb-color": field.value ? "black" : "white", // Dynamically change the thumb color
+                    } as React.CSSProperties
+                  }
                 />
               )}
             />
@@ -220,7 +223,6 @@ export default function NewContentForm({
   // Handle form submission
   const onSubmit = async (data: FormData) => {
     try {
-      console.log("Form Data:", data);
       onFinish?.(data, true);
       // TODO: Implement server submission logic here.
     } catch (error) {
@@ -244,7 +246,6 @@ export default function NewContentForm({
     }
 
     const isValid = await trigger(fieldsToValidate);
-    console.log(`Validation for slide ${currentSlide}:`, isValid);
 
     // Navigate slides if valid
     if (isValid) {

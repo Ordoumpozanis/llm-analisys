@@ -21,8 +21,6 @@ export async function processChat({
     const result = await scrap.readChat({ url });
 
     if (result.success) {
-      console.log("Chat processing completed successfully.");
-
       return {
         success: true,
         chatData: result.data,
