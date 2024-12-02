@@ -145,17 +145,21 @@ export class GptScrapper {
    */
   public async processChat(url: string): Promise<OperationResult<string>> {
     try {
+      console.log(`Fetching HTML content from URL: ${url}`);
       const response: AxiosResponse<string> = await this.axios.get(url);
       const htmlContent: string = response.data;
 
+      console.log("Parsing HTML content.");
       const dom = new JSDOM(htmlContent);
       const document = dom.window.document;
 
+      console.log("Cleaning up unwanted HTML elements.");
       document
         .querySelectorAll("meta, link, audio")
         .forEach((element) => element.remove());
 
       const cleanedHTML: string = dom.serialize();
+      console.log("HTML content cleaned successfully.");
 
       return { success: true, data: cleanedHTML };
     } catch (error: unknown) {
@@ -183,7 +187,9 @@ export class GptScrapper {
     data: string
   ): Promise<OperationResult<void>> {
     try {
+      console.log(`Saving cleaned HTML to file: ${filename}`);
       await fs.writeFile(filename, data, "utf8");
+      console.log(`Cleaned HTML content saved to ${filename}.`);
       return { success: true };
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -231,6 +237,7 @@ export class GptScrapper {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let jsonObject: any;
       try {
+        console.log("Parsing extracted block as JSON5.");
         jsonObject = JSON5.parse(extractedBlock);
       } catch (parseError: unknown) {
         if (parseError instanceof Error) {
@@ -243,6 +250,7 @@ export class GptScrapper {
       }
 
       const jsonString: string = JSON.stringify(jsonObject, null, 2);
+      console.log("Server response extracted and parsed successfully.");
 
       return { success: true, data: jsonString };
     } catch (error: unknown) {
@@ -290,7 +298,9 @@ export class GptScrapper {
   ): Promise<OperationResult<void>> {
     const { data, filename = "data.json" } = params;
     try {
+      console.log(`Saving JSON data to file: ${filename}`);
       await fs.writeFile(filename, data, "utf8");
+      console.log(`JSON content saved to ${filename}.`);
       return { success: true };
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -355,6 +365,7 @@ export class GptScrapper {
       traverse(jsonObject);
 
       const jsonString: string = JSON.stringify(messages, null, 2);
+      console.log("Messages extracted successfully.");
 
       return { success: true, data: jsonString };
     } catch (error: unknown) {
@@ -451,6 +462,7 @@ export class GptScrapper {
             },
           })
         );
+        console.log("Messages minimized and cleaned successfully.");
         return { success: true, data: JSON.stringify(results, null, 2) };
       }
 
@@ -459,6 +471,7 @@ export class GptScrapper {
       const fullContentCleaned: any[] = uniqueMessages.map((item) =>
         removeNulls(item)
       );
+      console.log("Messages cleaned successfully without minimization.");
       return {
         success: true,
         data: JSON.stringify(fullContentCleaned, null, 2),
@@ -542,6 +555,7 @@ export class GptScrapper {
         organizedMessages.push(currentQuestion);
       }
 
+      console.log("Messages organized successfully.");
       return {
         success: true,
         data: JSON.stringify(organizedMessages, null, 2),
@@ -758,6 +772,12 @@ export class GptScrapper {
       saveJson = false,
     } = params;
 
+    console.log("=== Starting Chat Processing ===");
+    console.log(`URL: ${url}`);
+    console.log(`Minimize: ${minimize}`);
+    console.log(`Create HTML: ${createHtml}`);
+    console.log(`Save JSON: ${saveJson}`);
+
     // Step 1: Process Chat
     const processResult = await this.processChat(url);
     if (!processResult.success || !processResult.data) {
@@ -856,6 +876,20 @@ export class GptScrapper {
       }
     }
 
+    // // Step 9: Save Final JSON Output
+    // const saveFinalJsonResult = await this.saveJson({
+    //   data: globalStats.content,
+    //   filename: "messages.json",
+    // });
+
+    // if (!saveFinalJsonResult.success) {
+    //   console.error("Failed to save final JSON output. Exiting.");
+    //   return this.onError(
+    //     saveFinalJsonResult.error || "Failed to save final JSON output."
+    //   );
+    // }
+
+    // console.log("=== Chat Processing Completed Successfully ===");
     return {
       success: true,
       data: globalStats.content || "{}",
@@ -972,3 +1006,29 @@ export class GptScrapper {
     }
   }
 }
+
+// // Entry point
+// const app = async ({
+//   url,
+//   minimize = false,
+//   createHtml = false,
+//   saveJson = false,
+// }: {
+//   url: string;
+//   minimize?: boolean;
+//   createHtml?: boolean;
+//   saveJson?: boolean;
+// }) => {
+//   const gpt = new GptScrapper();
+//   const result = await gpt.readChat({ url, minimize, createHtml, saveJson });
+
+//   if (result.success) {
+//     console.log("Chat processing completed successfully.");
+//   } else {
+//     console.error(`Chat processing failed: ${result.error}`);
+//   }
+// };
+
+// const url = "https://chatgpt.com/share/67449f60-81f4-8011-8775-5f1307d12394";
+
+// app({ url, minimize: false, createHtml: false, saveJson: false });
