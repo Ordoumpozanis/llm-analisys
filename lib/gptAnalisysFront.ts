@@ -150,7 +150,6 @@ export class GptScrapper {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let jsonObject: any;
       try {
-        console.log("Parsing extracted block as JSON5.");
         jsonObject = JSON5.parse(extractedBlock);
       } catch (parseError: unknown) {
         if (parseError instanceof Error) {
@@ -163,7 +162,7 @@ export class GptScrapper {
       }
 
       const jsonString: string = JSON.stringify(jsonObject, null, 2);
-      console.log("Server response extracted and parsed successfully.");
+      ("Server response extracted and parsed successfully.");
 
       return { success: true, data: jsonString };
     } catch (error: unknown) {
@@ -253,7 +252,7 @@ export class GptScrapper {
       traverse(jsonObject);
 
       const jsonString: string = JSON.stringify(messages, null, 2);
-      console.log("Messages extracted successfully.");
+      ("Messages extracted successfully.");
 
       return { success: true, data: jsonString };
     } catch (error: unknown) {
