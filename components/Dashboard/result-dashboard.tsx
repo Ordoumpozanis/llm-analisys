@@ -153,7 +153,7 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
                 userData: { ...userData },
                 type: "General",
                 date: new Date().toISOString(),
-                uuid: uuid,
+                uuid: uuid || newUuid,
               };
 
               setNewSearch(false);
@@ -161,6 +161,12 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
 
               //update state
               setAnalysed(true);
+
+              if (!toSave.uuid) {
+                console.error("UUID is missing before saving", toSave);
+                toast.error("Error: UUID could not be generated.");
+                return;
+              }
 
               //save chat
               await saveChat(JSON.stringify(toSave));
