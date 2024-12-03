@@ -7,6 +7,7 @@ export const menuLInks = [
       <appIcons.home className="h-full w-full text-neutral-500 dark:text-neutral-300" />
     ),
     href: "/",
+    nid: "1",
   },
 
   {
@@ -15,6 +16,7 @@ export const menuLInks = [
       <appIcons.analise className="h-full w-full text-neutral-500 dark:text-neutral-300" />
     ),
     href: "/analyse",
+    nid: "2",
   },
   {
     title: "Security",
@@ -22,6 +24,7 @@ export const menuLInks = [
       <appIcons.encrypt className="h-full w-full text-neutral-500 dark:text-neutral-300" />
     ),
     href: "/security",
+    nid: "3",
   },
   {
     title: "Research",
@@ -29,6 +32,7 @@ export const menuLInks = [
       <appIcons.research className="h-full w-full text-neutral-500 dark:text-neutral-300" />
     ),
     href: "/research",
+    nid: "4",
   },
   {
     title: "Contact",
@@ -36,5 +40,6 @@ export const menuLInks = [
       <appIcons.contact className="h-full w-full text-neutral-500 dark:text-neutral-300" />
     ),
     href: "/contact",
+    nid: "5",
   },
 ];

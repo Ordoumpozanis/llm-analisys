@@ -4,17 +4,37 @@ import { LampContainer } from "@/components/ui/lamp";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import UserProfileForm from "@/components/forms/user-profile-form";
-import ContentForm from "@/components/forms/new-content-form"; // Import ContentForm as NewContentForm
 import { useUserStore } from "@/stores/userStore";
 import { useRouter } from "next/navigation";
+import { v4 as uuidv4 } from "uuid";
+import { useEffect } from "react";
+import Link from "next/link";
+import { menuLInks } from "@/setup/menu-links";
 
 export default function Home() {
   const saveUserData = useUserStore((state) => state.saveUserData);
   const isUserDataSaved = useUserStore((state) => state.isUserDataSaved);
   const resetUserData = useUserStore((state) => state.resetUserData);
   const setAnalysed = useUserStore((state) => state.setAnalysed);
-  const updateUserData = useUserStore((state) => state.updateUserData);
   const router = useRouter();
+
+  const setSessionID = useUserStore((state) => state.setSessionID);
+  const sessionID = useUserStore((state) => state.sessionID);
+  const setUuid = useUserStore((state) => state.setUuid);
+  const uuid = useUserStore((state) => state.uuid);
+
+  useEffect(() => {
+    if (!uuid) {
+      const newUUID = uuidv4();
+      setUuid(newUUID);
+    }
+
+    if (!sessionID) {
+      const newsessionID = uuidv4();
+      setSessionID(newsessionID);
+      console.log("sessionID", newsessionID);
+    }
+  }, []);
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center">
@@ -54,29 +74,18 @@ export default function Home() {
           className="flex justify-center items-center gap-4 mt-10"
         >
           {isUserDataSaved ? (
-            <ContentForm
-              formTrigger={
-                <Button
-                  variant="default"
-                  className="border-2 border-green-500 rounded-lg bg-background text-green-500 hover:bg-foreground/70 hover:text-background"
-                  size="lg"
-                >
-                  Continue
-                </Button>
-              }
-              onFinish={(data, submitted) => {
-                if (submitted) {
-                  // Handle any additional logic after submitting ContentForm
-
-                  // update values in store
-                  updateUserData(data);
-                  //update store analyse state
+            <Link href={menuLInks[1].href}>
+              <Button
+                variant="default"
+                className="border-2 border-green-500 rounded-lg bg-background text-green-500 hover:bg-foreground/70 hover:text-background"
+                size="lg"
+                onClick={() => {
                   setAnalysed(false);
-                  // Optionally navigate to another page or show a success message
-                  router.push("/analyse");
-                }
-              }}
-            />
+                }}
+              >
+                Analise new Chat
+              </Button>
+            </Link>
           ) : (
             <UserProfileForm
               formTrigger={
@@ -93,6 +102,7 @@ export default function Home() {
                   // Save the user data to the Zustand store
                   saveUserData(data);
                   //update store analyse state
+
                   setAnalysed(false);
                   // Optionally navigate to another page or show a success message
                   router.push("/analyse");
@@ -101,18 +111,20 @@ export default function Home() {
             />
           )}
 
-          <motion.h3
-            initial={{ opacity: 0.5, y: 100 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: 0.5,
-              duration: 0.8,
-              ease: "easeInOut",
-            }}
-            className=" bg-gradient-to-br from-slate-300 to-slate-500 py-4 bg-clip-text text-center text-md lg:text-lg font-medium tracking-tight text-transparent "
-          >
-            The invisible side of AI
-          </motion.h3>
+          {!isUserDataSaved && (
+            <motion.h3
+              initial={{ opacity: 0.5, y: 100 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: 0.5,
+                duration: 0.8,
+                ease: "easeInOut",
+              }}
+              className=" bg-gradient-to-br from-slate-300 to-slate-500 py-4 bg-clip-text text-center text-md lg:text-lg font-medium tracking-tight text-transparent "
+            >
+              The invisible side of AI
+            </motion.h3>
+          )}
         </motion.div>
         {isUserDataSaved && (
           <motion.button

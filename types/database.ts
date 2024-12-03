@@ -6,20 +6,6 @@ const ObjectIdSchema = z
   .regex(/^[a-fA-F0-9]{24}$/, "Invalid MongoDB ObjectId");
 
 // User schema
-const UserSchema = z.object({
-  age: z.string(),
-  businessRole: z.string(),
-  businessRoleOther: z.string().optional(),
-  chatUserId: z.string(),
-  country: z.string(),
-  educationLevel: z.string(),
-  educationLevelOther: z.string().optional(),
-  experienceLevel: z.string(),
-  frequencyOfChatbotUse: z.string(),
-  scopeOfChat: z.string(),
-  metadata: z.record(z.any()).optional(),
-  sessionIds: z.array(ObjectIdSchema), // Array of session IDs as strings
-});
 
 // Session schema
 const SessionSchema = z.object({
@@ -114,7 +100,6 @@ const GlobalStatisticsSchema = z.object({
 
 // Export schemas
 export {
-  UserSchema,
   SessionSchema,
   MessageSchema,
   ResponseSchema,

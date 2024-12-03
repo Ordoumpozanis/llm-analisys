@@ -283,12 +283,11 @@ export default function NewContentForm({
           <DialogTitle className="text-xl text-green-500">
             {slides[currentSlide].title}
           </DialogTitle>
-          {currentSlide < slides.length - 1 &&
-            slides[currentSlide]?.description && (
-              <DialogDescription className="text-sm text-muted-foreground">
-                {slides[currentSlide].description}
-              </DialogDescription>
-            )}
+          {slides[currentSlide]?.description && (
+            <DialogDescription className="text-sm text-muted-foreground">
+              {slides[currentSlide].description}
+            </DialogDescription>
+          )}
         </DialogHeader>
 
         <Card className="w-full mx-auto">

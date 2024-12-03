@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { savedObjectSchema } from "@/schemas/prisma";
 import { Prisma } from "@prisma/client";
 
-export default async function sabeChat(toSave: string) {
+export default async function saveChat(toSave: string) {
   if (!toSave) {
     return { success: false, error: "No data provided" };
   }
@@ -11,7 +11,6 @@ export default async function sabeChat(toSave: string) {
   try {
     const document = JSON.parse(toSave);
     const parsedData = savedObjectSchema.parse(document);
-
     const data = await prisma.chat.create({
       data: parsedData as Prisma.ChatCreateInput,
     });

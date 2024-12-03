@@ -9,6 +9,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log("checking the isUserDataSaved", isUserDataSaved);
     if (!isUserDataSaved) {
       router.push("/");
     }

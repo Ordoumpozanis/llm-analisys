@@ -16,7 +16,7 @@ import {
   useTransform,
 } from "framer-motion";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 export const FloatingDock = ({
@@ -28,10 +28,20 @@ export const FloatingDock = ({
   desktopClassName?: string;
   mobileClassName?: string;
 }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   return (
     <>
       <FloatingDockDesktop items={items} className={desktopClassName} />
-      <FloatingDockMobile items={items} className={mobileClassName} />
+      <FloatingDockMobile
+        items={items}
+        className={mobileClassName}
+        setIsMenuOpen={(state) => {
+          setIsMenuOpen(state);
+        }}
+      />
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-[30] bg-black opacity-70 flex justify-center items-center select-none"></div>
+      )}
     </>
   );
 };
@@ -39,15 +49,27 @@ export const FloatingDock = ({
 const FloatingDockMobile = ({
   items,
   className,
+  setIsMenuOpen,
 }: {
-  items: { title: string; icon: React.ReactNode; href: string }[];
+  items: {
+    title: string;
+    icon: React.ReactNode;
+    href: string;
+  }[];
   className?: string;
+  setIsMenuOpen: (state: boolean) => void;
 }) => {
   const [open, setOpen] = useState(false);
   const pathname = usePathname(); // Get the current pathname
 
+  useEffect(() => {
+    if (open) {
+      setIsMenuOpen(true);
+    }
+  }, [open]);
+
   return (
-    <div className={cn("relative block md:hidden", className)}>
+    <div className={cn("relative block md:hidden z-50", className)}>
       <AnimatePresence>
         {open && (
           <motion.div
@@ -78,9 +100,13 @@ const FloatingDockMobile = ({
                     href={item.href}
                     key={item.title}
                     className={cn(
-                      "h-14 w-14 rounded-full  dark:bg-neutral-900 flex items-center justify-center",
+                      "h-14 w-14 rounded-full  dark:bg-neutral-900 flex items-center justify-center border-green-500 border-[1px]",
                       pathname === item.href ? "bg-background" : "bg-gray-50"
                     )}
+                    onClick={() => {
+                      setOpen(false);
+                      setIsMenuOpen(false);
+                    }}
                   >
                     <div className="h-7 w-7">{item.icon}</div>
                   </Link>
@@ -112,7 +138,7 @@ const FloatingDockDesktop = ({
       onMouseMove={(e) => mouseX.set(e.pageX)}
       onMouseLeave={() => mouseX.set(Infinity)}
       className={cn(
-        "mx-auto hidden md:flex h-16 gap-4 items-end  rounded-2xl bg-gray-50 dark:bg-neutral-900 px-4 pb-3",
+        "mx-auto hidden md:flex h-16 gap-4 items-end  rounded-2xl bg-gray-50 dark:bg-neutral-900 px-4 pb-3 z-50",
         className
       )}
     >

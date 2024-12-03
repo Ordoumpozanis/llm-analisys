@@ -13,8 +13,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -27,7 +25,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
+import { Slider } from "@/components/ui/slider"; // Import Slider from shadcn
 
+// Define the business categories
 const businessCategories = [
   "Education (Schools, Training Centers, Tutors)",
   "Research (Scientific, Academic, Market Research)",
@@ -45,39 +45,61 @@ const businessCategories = [
   "Nonprofit and Charity (Social Work, Volunteering Organizations)",
   "Other (Catch-all for unique or unspecified businesses)",
 ];
-import { menuLInks } from "@/setup/menu-links";
 
+// Define the form schema using Zod
+// Define the form schema using Zod
 const formSchema = z.object({
-  consent: z.boolean().optional(),
-  age: z
-    .number()
-    .min(16, { message: "Age must be at least 16." })
-    .max(94, { message: "Age must be 94 or below." }),
-  chatType: z.enum(["personal", "business", "learning", "testing", "playing"], {
-    required_error: "Please select the type of chat.",
-  }),
-  chatPurpose: z
-    .string()
-    .min(10, {
-      message: "Please provide a reason (at least 10 characters).",
-    })
-    .refine((val) => /^[a-zA-Z0-9 .]+$/.test(val), {
-      message: "Only letters, numbers, spaces, and periods are allowed.",
-    }),
+  // Slide 3: Reason for Using ChatGPT
+  usageReason: z.enum(
+    ["Personal", "Business", "Learning", "Testing", "Playing"],
+    {
+      required_error: "Please select the primary reason for using ChatGPT.",
+    }
+  ),
+
+  // Slide 4: Business Category (conditionally required)
   businessCategory: z.string().optional(),
-  expertiseLevel: z.enum(["beginner", "medium", "advanced"], {
-    required_error: "Please select your expertise level.",
+
+  // Slide 5: Daily Usage Hours
+  hoursPerDay: z
+    .number()
+    .min(0, { message: "Minimum value is 0 hours." })
+    .max(10, { message: "Maximum value is 10 hours." })
+    .default(1),
+
+  // Slide 6: Level of Expertise in GPT
+  expertiseLevel: z.enum(["Beginner", "Intermediate", "Advanced"], {
+    required_error: "Please select your level of expertise.",
   }),
+
+  // Slide 7: Educational Level
   educationLevel: z.enum(
-    ["none", "high_school", "university", "master", "phd"],
+    [
+      "None",
+      "Entry level school",
+      "High school",
+      "University",
+      "Master",
+      "PhD",
+      "Post Doc",
+    ],
     {
       required_error: "Please select your educational level.",
     }
   ),
+
+  // **New Slide 3.5: Your Age**
+  age: z
+    .number()
+    .min(16, { message: "Minimum age is 16." })
+    .max(100, { message: "Maximum age is 100." })
+    .int({ message: "Age must be an integer." }), // Ensures age is an integer
 });
 
+// Infer the form data type from the schema
 type FormData = z.infer<typeof formSchema>;
 
+// Define the component props
 type UserProfileFormProps = {
   formTrigger: React.ReactNode;
   className?: string;
@@ -89,9 +111,10 @@ export default function UserProfileForm({
   className,
   onFinish,
 }: UserProfileFormProps) {
-  const [isOther, setIsOther] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOther, setIsOther] = useState(false); // State to handle "Other" in Business Category
+  const [currentSlide, setCurrentSlide] = useState(0); // Current slide index
+  const [isSubmitting, setIsSubmitting] = useState(false); // Submission state
+
   const {
     control,
     handleSubmit,
@@ -102,102 +125,121 @@ export default function UserProfileForm({
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      consent: true,
-      age: 16,
-      chatType: "personal",
-      chatPurpose: "",
+      usageReason: "Personal",
       businessCategory: "",
-      expertiseLevel: "beginner",
-      educationLevel: "none",
+      hoursPerDay: 1,
+      expertiseLevel: "Beginner",
+      educationLevel: "None",
+      age: 16, // **Added Default Age**
     },
   });
 
-  const onSubmit = async (data: FormData) => {
-    try {
-      onFinish?.(data, true);
-      // TODO: Implement server submission logic here.
-    } catch (error) {
-      console.error("Validation Error:", error);
-    }
+  // Watchers for dynamic content
+  const usageReason = watch("usageReason");
+  const businessCategory = watch("businessCategory");
+  const hoursPerDay = watch("hoursPerDay");
+  const expertiseLevel = watch("expertiseLevel");
+  const educationLevel = watch("educationLevel");
+  const age = watch("age");
+
+  //Slides animation
+  const fadeInVariantTwo = {
+    hidden: { opacity: 0 },
+    visible: (i: number) => ({
+      opacity: 1,
+      transition: {
+        delay: i * 0.2, // Adds delay for each element
+        duration: 0.5,
+      },
+    }),
   };
 
-  const chatType = watch("chatType");
+  //Slides animation
+  const fadeInVariantOne = {
+    hidden: { opacity: 0 },
+    visible: (i: number) => ({
+      opacity: 1,
+      transition: {
+        delay: i * 0.2, // Adds delay for each element
+        duration: 0.3,
+      },
+    }),
+  };
 
+  // Define the slides
   const slides = [
     {
       id: 0,
-      title: "Welcome & Consent",
+      title: "Welcome",
       content: (
-        <div>
-          <p className="mb-4 text-justify">
-            Welcome! This ongoing research aims to evaluate human interaction
-            with ChatGPT and the environmental impact we users produce while
-            Chatting. By participating, you help us understand user behavior and
-            the environmental effects of AI interactions.
-          </p>
-          <p className="mb-4 text-justify">
-            To enable this research, we will read your chat messages with GPT.
-            Please do not include any personal or business-sensitive information
-            in your conversations, as this data will be accessible to us. If you
-            prefer not to share your chat content, please disable the green
-            toggle below. This will allow us to collect only behavioral data and
-            usage statistics without accessing your messages. You can learn more
-            on our{" "}
-            <a className="bg-green-500" href={menuLInks[2].href}>
-              Security Page
-            </a>
-          </p>
-          <div className="flex items-center space-x-4">
-            <Label
-              htmlFor="consent"
-              className={cn(
-                watch("consent") ? "text-green-500" : "text-red-500"
-              )}
-            >
-              Allow us to read your chat data:
-            </Label>
-
-            <Controller
-              name="consent"
-              control={control}
-              render={({ field }) => (
-                <Switch
-                  id="consent"
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  className={cn(
-                    "border-2 transition-colors relative",
-                    field.value
-                      ? "bg-white border-green-500"
-                      : "bg-red-500 border-red-500"
-                  )}
-                  style={
-                    {
-                      "--switch-thumb-color": field.value ? "black" : "white", // Dynamically change the thumb color
-                    } as React.CSSProperties
-                  }
-                />
-              )}
-            />
-
-            {/* Dynamic OK or PRIVATE text */}
-            <span
-              className={cn(
-                "ml-2 text-sm font-semibold",
-                watch("consent") ? "text-green-500" : "text-red-500"
-              )}
-            >
-              {watch("consent") ? "OK" : "PRIVATE"}
-            </span>
-          </div>
-          {errors.consent && (
-            <p className="text-red-500 text-sm">{errors.consent.message}</p>
-          )}
-        </div>
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{
+            visible: { transition: { staggerChildren: 0.2 } },
+          }}
+        >
+          <motion.h1
+            className="text-2xl font-semibold mb-4 text-center text-green-500"
+            custom={1}
+            variants={fadeInVariantTwo}
+          >
+            Welcome !
+          </motion.h1>
+          <motion.p
+            className="text-center text-sm"
+            custom={2}
+            variants={fadeInVariantTwo}
+          >
+            {`Before we start, let's answer 5 very short questions.`}
+          </motion.p>
+        </motion.div>
       ),
     },
     {
       id: 1,
+      title: "Scope of Research",
+      content: (
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{
+            visible: { transition: { staggerChildren: 0.2 } },
+          }}
+        >
+          <motion.p
+            className="mb-4 text-justify"
+            custom={1}
+            variants={fadeInVariantOne}
+          >
+            Our research focuses on three main areas:
+          </motion.p>
+          <ol className="list-decimal list-inside mb-4">
+            <motion.li custom={2} variants={fadeInVariantOne}>
+              To inform users that AI has an environmental impact and this is an
+              interactive way to count our impact.
+            </motion.li>
+            <motion.li custom={3} variants={fadeInVariantOne}>
+              To see how everyday people use ChatGPT in order to study
+              human-to-AI interaction in ChatGPT.
+            </motion.li>
+            <motion.li custom={4} variants={fadeInVariantOne}>
+              To estimate the environmental impact.{" "}
+            </motion.li>
+          </ol>
+          <motion.p
+            className="mb-4 text-justify"
+            custom={5}
+            variants={fadeInVariantOne}
+          >
+            This survey is designed for a general audience, not related to tech
+            or AI.
+          </motion.p>
+        </motion.div>
+      ),
+    },
+    {
+      id: 2, // Ensure this ID is unique within the slides array
       title: "Your Age",
       description: "Please enter your age using the input below.",
       content: (
@@ -272,14 +314,13 @@ export default function UserProfileForm({
       ),
     },
     {
-      id: 2,
-      title: "Type of Chat",
-      description:
-        "Please select the type of chat that best describes your interaction.",
+      id: 3,
+      title: "Reason for Using ChatGPT",
+      description: "Please select the primary reason you use ChatGPT.",
       content: (
         <div>
           <Controller
-            name="chatType"
+            name="usageReason"
             control={control}
             render={({ field }) => (
               <RadioGroup
@@ -287,67 +328,32 @@ export default function UserProfileForm({
                 className="flex flex-col space-y-2 mt-2"
                 onValueChange={(value) => {
                   field.onChange(value);
-                  if (value !== "business") {
-                    setValue("businessCategory", "");
-                  }
                 }}
               >
-                {["personal", "business", "learning", "testing", "playing"].map(
-                  (type) => (
-                    <div key={type} className="flex items-center space-x-2">
-                      <RadioGroupItem value={type} id={`chat-${type}`} />
-                      <Label htmlFor={`chat-${type}`}>
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                      </Label>
+                {["Personal", "Business", "Learning", "Testing", "Playing"].map(
+                  (reason) => (
+                    <div key={reason} className="flex items-center space-x-2">
+                      <RadioGroupItem value={reason} id={`usage-${reason}`} />
+                      <Label htmlFor={`usage-${reason}`}>{reason}</Label>
                     </div>
                   )
                 )}
               </RadioGroup>
             )}
           />
-          {errors.chatType && (
-            <p className="text-red-500 text-sm">{errors.chatType.message}</p>
+          {errors.usageReason && (
+            <p className="text-red-500 text-sm">{errors.usageReason.message}</p>
           )}
-          {/* Add the textarea for "why you created this chat" */}
-          <div className="mt-4">
-            <Label htmlFor="chatPurpose">
-              Could you tell us why you created this chat?
-            </Label>
-            <Controller
-              name="chatPurpose"
-              control={control}
-              render={({ field }) => (
-                <Textarea
-                  {...field}
-                  id="chatPurpose"
-                  placeholder="Your reason..."
-                  rows={3}
-                  draggable={false}
-                  className="border-green-500 w-full mt-2"
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (/^[a-zA-Z0-9 .]*$/.test(value)) {
-                      field.onChange(value); // Update field only if valid
-                    }
-                  }}
-                />
-              )}
-            />
-            {errors.chatPurpose && (
-              <p className="text-red-500 text-sm">
-                {errors.chatPurpose.message}
-              </p>
-            )}
-          </div>
+          {/* Removed Dynamic Text from Slide Content */}
         </div>
       ),
     },
     {
-      id: 3,
+      id: 4,
       title: "Business Category",
       description:
         "Please select your business category from the list or specify if applicable.",
-      content: chatType === "business" && (
+      content: usageReason === "Business" && (
         <div>
           {!isOther ? (
             <ScrollArea className="h-48 border rounded-md mt-2">
@@ -357,7 +363,7 @@ export default function UserProfileForm({
                   return (
                     <li
                       key={value}
-                      className="p-2 hover:bg-green-500  hover:text-foreground  cursor-pointer flex justify-between items-center"
+                      className="p-2 hover:bg-green-500 hover:text-foreground cursor-pointer flex justify-between items-center"
                       onClick={() => {
                         if (value === "Other") {
                           setIsOther(true);
@@ -369,9 +375,7 @@ export default function UserProfileForm({
                     >
                       {category}
                       {value === "Other" && (
-                        <span className="text-green-500 :hover:text-foreground">
-                          ➤
-                        </span>
+                        <span className="text-green-500">➤</span>
                       )}
                     </li>
                   );
@@ -383,16 +387,16 @@ export default function UserProfileForm({
               <button
                 type="button"
                 onClick={() => setIsOther(false)}
-                className="px-2 py-1  bg-green-500 hover:bg-background  text-foreground rounded-md border-green-500"
+                className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white rounded-md border-green-500"
               >
                 &#8592; Back
               </button>
               <input
                 type="text"
                 placeholder="Please specify"
-                value={watch("businessCategory") || ""}
+                value={businessCategory || ""}
                 onChange={(e) => setValue("businessCategory", e.target.value)}
-                className="flex-1 border rounded-md px-3 py-1 active:border-green-500 "
+                className="flex-1 border rounded-md px-3 py-1 active:border-green-500"
               />
             </div>
           )}
@@ -404,11 +408,39 @@ export default function UserProfileForm({
         </div>
       ),
     },
-
     {
-      id: 4,
+      id: 5,
+      title: "Daily Usage Hours",
+      description: "How many hours per day do you interact with ChatGPT?",
+      content: (
+        <div className="flex flex-col items-center">
+          <Controller
+            name="hoursPerDay"
+            control={control}
+            render={({ field }) => (
+              <>
+                <Slider
+                  {...field}
+                  value={[field.value]}
+                  onValueChange={(value) => field.onChange(value[0])}
+                  max={10}
+                  step={1}
+                  className="w-[60%]"
+                />
+                {/* Removed Dynamic Text from Slide Content */}
+              </>
+            )}
+          />
+          {errors.hoursPerDay && (
+            <p className="text-red-500 text-sm">{errors.hoursPerDay.message}</p>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 6,
       title: "Level of Expertise in GPT",
-      description: "lease select your level of expertise in using GPT.",
+      description: "Please select your level of expertise with GPT.",
       content: (
         <div>
           <Controller
@@ -417,22 +449,15 @@ export default function UserProfileForm({
             render={({ field }) => (
               <RadioGroup
                 {...field}
-                className="flex flex-col space-y-2 mt-2 border-green-500"
+                className="flex flex-col space-y-2 mt-2"
                 onValueChange={(value) => {
                   field.onChange(value);
-                  trigger("expertiseLevel").then((isValid) => {
-                    if (isValid) {
-                      handleNext();
-                    }
-                  });
                 }}
               >
-                {["beginner", "medium", "advanced"].map((level) => (
+                {["Beginner", "Intermediate", "Advanced"].map((level) => (
                   <div key={level} className="flex items-center space-x-2">
                     <RadioGroupItem value={level} id={`expertise-${level}`} />
-                    <Label htmlFor={`expertise-${level}`}>
-                      {level.charAt(0).toUpperCase() + level.slice(1)}
-                    </Label>
+                    <Label htmlFor={`expertise-${level}`}>{level}</Label>
                   </div>
                 ))}
               </RadioGroup>
@@ -443,12 +468,12 @@ export default function UserProfileForm({
               {errors.expertiseLevel.message}
             </p>
           )}
+          {/* Removed Dynamic Text from Slide Content */}
         </div>
       ),
     },
-
     {
-      id: 5,
+      id: 7,
       title: "Educational Level",
       description: "Please select your highest level of education.",
       content: (
@@ -459,28 +484,25 @@ export default function UserProfileForm({
             render={({ field }) => (
               <RadioGroup
                 {...field}
-                className="flex flex-col space-y-2 mt-2 border-green-500"
+                className="flex flex-col space-y-2 mt-2"
                 onValueChange={(value) => {
                   field.onChange(value);
-                  trigger("educationLevel").then((isValid) => {
-                    if (isValid) {
-                      handleNext();
-                    }
-                  });
                 }}
               >
-                {["none", "high_school", "university", "master", "phd"].map(
-                  (level) => (
-                    <div key={level} className="flex items-center space-x-2">
-                      <RadioGroupItem value={level} id={`education-${level}`} />
-                      <Label htmlFor={`education-${level}`}>
-                        {level
-                          .replace(/_/g, " ")
-                          .replace(/\b\w/g, (char) => char.toUpperCase())}
-                      </Label>
-                    </div>
-                  )
-                )}
+                {[
+                  "None",
+                  "Entry level school",
+                  "High school",
+                  "University",
+                  "Master",
+                  "PhD",
+                  "Post Doc",
+                ].map((level) => (
+                  <div key={level} className="flex items-center space-x-2">
+                    <RadioGroupItem value={level} id={`education-${level}`} />
+                    <Label htmlFor={`education-${level}`}>{level}</Label>
+                  </div>
+                ))}
               </RadioGroup>
             )}
           />
@@ -489,71 +511,120 @@ export default function UserProfileForm({
               {errors.educationLevel.message}
             </p>
           )}
+          {/* Removed Dynamic Text from Slide Content */}
         </div>
       ),
     },
-
     {
-      id: 6,
-      title: "Thank You",
+      id: 8,
+      title: "Thank You!",
       content: (
-        <div>
+        <div className="text-center">
           <p className="mb-4">
-            {` Thank you for your time! Most of these questions won't be repeated
-           the next time you use this tool. Enjoy!`}
+            Thank you for your time! Your responses are invaluable in helping us
+            understand and improve the interaction between humans and AI.
           </p>
+          {/* Removed Submit Button from Slide Content */}
         </div>
       ),
     },
   ];
 
+  // Handle form submission
+  const onSubmit = async (data: FormData) => {
+    try {
+      onFinish?.(data, true);
+      // TODO: Implement server submission logic here.
+      console.log("Form Data Submitted:", data);
+    } catch (error) {
+      console.error("Submission Error:", error);
+    }
+  };
+
+  // Function to handle advancing to the next slide
+  // Function to handle advancing to the next slide
   const handleNext = async () => {
     let fieldsToValidate: (keyof FormData)[] = [];
 
     switch (currentSlide) {
       case 0:
-        fieldsToValidate = ["consent"];
+        // Slide 1: Welcome (no fields to validate)
         break;
       case 1:
-        fieldsToValidate = ["age"];
+        // Slide 2: Scope of Research (no fields to validate)
         break;
       case 2:
-        fieldsToValidate = ["chatType", "chatPurpose"];
+        // **New Slide 3: Your Age**
+        fieldsToValidate = ["age"];
         break;
       case 3:
-        if (chatType === "business") {
+        // Slide 4: Reason for Using ChatGPT
+        fieldsToValidate = ["usageReason"];
+        break;
+      case 4:
+        // Slide 5: Business Category (conditionally required)
+        if (usageReason === "Business") {
           fieldsToValidate = ["businessCategory"];
         }
         break;
-      case 4:
+      case 5:
+        // Slide 6: Daily Usage Hours
+        fieldsToValidate = ["hoursPerDay"];
+        break;
+      case 6:
+        // Slide 7: Level of Expertise in GPT
         fieldsToValidate = ["expertiseLevel"];
         break;
-      case 5:
+      case 7:
+        // Slide 8: Educational Level
         fieldsToValidate = ["educationLevel"];
         break;
       default:
         fieldsToValidate = [];
     }
 
-    const isValid = await trigger(fieldsToValidate);
+    if (fieldsToValidate.length > 0) {
+      const isValid = await trigger(fieldsToValidate);
+      if (!isValid) return;
+    }
 
-    // Navigate slides if valid
-    if (isValid) {
-      if (currentSlide === 2 && chatType !== "business") {
-        setCurrentSlide(4); // Skip to "Level of Expertise in GPT"
-      } else if (currentSlide === 3 && chatType === "business") {
-        setCurrentSlide(4);
+    // **Updated Conditional Navigation**
+    if (currentSlide === 2) {
+      // After Your Age
+      setCurrentSlide(3); // Proceed to Reason for Using ChatGPT Slide
+    } else if (currentSlide === 3) {
+      // After Reason for Using ChatGPT
+      if (usageReason === "Business") {
+        setCurrentSlide(4); // Proceed to Business Category Slide
       } else {
-        setCurrentSlide((prev) => prev + 1);
+        setCurrentSlide(5); // Skip Business Category Slide
       }
+    } else if (currentSlide === 4 && usageReason === "Business") {
+      // After Business Category
+      setCurrentSlide(5); // Proceed to Daily Usage Hours Slide
+    } else if (currentSlide < slides.length - 1) {
+      setCurrentSlide((prev) => prev + 1);
     }
   };
 
+  // Function to handle going back to the previous slide
   const handleBack = () => {
     if (currentSlide > 0) {
-      // If on "Level of Expertise in GPT" and chatType is not "business", skip "Business Category"
-      if (currentSlide === 4 && chatType !== "business") {
-        setCurrentSlide(2); // Navigate back to "Type of Chat"
+      if (currentSlide === 3 && usageReason !== "Business") {
+        setCurrentSlide(1); // Go back to Scope of Research Slide
+      } else if (currentSlide === 3 && usageReason === "Business") {
+        setCurrentSlide(2); // Go back to Your Age Slide
+      } else if (currentSlide === 4) {
+        setCurrentSlide(3); // Go back to Reason for Using ChatGPT Slide
+      } else if (currentSlide === 5) {
+        if (usageReason === "Business") {
+          setCurrentSlide(4); // Go back to Business Category Slide
+        } else {
+          setCurrentSlide(3); // Go back to Reason for Using ChatGPT Slide
+        }
+      } else if (currentSlide === 2) {
+        // Going back from "Your Age" Slide
+        setCurrentSlide(1); // Go back to Scope of Research Slide
       } else {
         setCurrentSlide((prev) => prev - 1);
       }
@@ -581,9 +652,9 @@ export default function UserProfileForm({
       >
         <DialogHeader className="p-5">
           <DialogTitle className="text-xl text-green-500">
-            {slides[currentSlide].title}
+            {currentSlide > 0 && slides[currentSlide].title}
           </DialogTitle>
-          {currentSlide > 0 &&
+          {currentSlide >= 0 &&
             currentSlide < slides.length - 1 &&
             slides[currentSlide]?.description && (
               <DialogDescription className="text-sm text-muted-foreground">
@@ -607,8 +678,11 @@ export default function UserProfileForm({
             >
               {(() => {
                 switch (currentSlide) {
-                  case 1: // Your Age
-                    const age = watch("age");
+                  case 0: // Slide 1: Welcome
+                    return null; // No dynamic content
+                  case 1: // Slide 2: Scope of Research
+                    return null; // No dynamic content
+                  case 2: // **New Slide 3: Your Age**
                     return (
                       <>
                         I am{" "}
@@ -618,66 +692,63 @@ export default function UserProfileForm({
                         years old.
                       </>
                     );
-                  case 2: // Type of Chat
-                    const chatType = watch("chatType");
-                    const chatPurpose = watch("chatPurpose");
+                  case 3: // Slide 4: Reason for Using ChatGPT
                     return (
                       <>
-                        The scope of the chat was{" "}
+                        I usually use ChatGPT for{" "}
                         <span className="text-green-500">
-                          {chatPurpose || "Please provide the purpose."}
-                        </span>{" "}
-                        and it was for a{" "}
-                        <span className="text-green-500">
-                          {chatType || "Please select the type of chat."}
-                        </span>{" "}
-                        purpose.
+                          {usageReason || "Please select your usage reason."}
+                        </span>
+                        .
                       </>
                     );
-                  case 3: // Business Category
-                    const businessCategory = watch("businessCategory");
+                  case 4: // Slide 5: Business Category
                     return (
                       <>
-                        I am working in the{" "}
+                        My main business scope is{" "}
                         <span className="text-green-500">
                           {businessCategory ||
                             "Please select your business category."}
-                        </span>{" "}
-                        industry.
+                        </span>
+                        .
                       </>
                     );
-                  case 4: // Level of Expertise in GPT
-                    const expertiseLevel = watch("expertiseLevel");
+                  case 5: // Slide 6: Daily Usage Hours
+                    return (
+                      <>
+                        I use ChatGPT for{" "}
+                        <span className="text-green-500">
+                          {hoursPerDay || "Please specify"} hours
+                        </span>{" "}
+                        per day.
+                      </>
+                    );
+                  case 6: // Slide 7: Level of Expertise in GPT
                     return (
                       <>
                         I am an{" "}
                         <span className="text-green-500">
                           {expertiseLevel ||
-                            "Please select your level of expertise."}
+                            "Please select your expertise level."}
                         </span>{" "}
-                        user in Chat-GPT.
+                        user on ChatGPT.
                       </>
                     );
-                  case 5: // Educational Level
-                    const educationLevel = watch("educationLevel");
-                    return (
+                  case 7: // Slide 8: Educational Level
+                    return educationLevel === "None" ? (
+                      "I have not finished any school."
+                    ) : (
                       <>
-                        {educationLevel === "none" ? (
-                          "I have not finished school."
-                        ) : (
-                          <>
-                            I have a{" "}
-                            <span className="text-green-500">
-                              {educationLevel ||
-                                "Please select your education level."}
-                            </span>{" "}
-                            degree.
-                          </>
-                        )}
+                        I own a{" "}
+                        <span className="text-green-500">
+                          {educationLevel ||
+                            "Please select your education level."}
+                        </span>{" "}
+                        degree.
                       </>
                     );
                   default:
-                    return null; // For slides without templates
+                    return null; // Slide 9: Thank You (no dynamic content)
                 }
               })()}
             </div>
@@ -698,30 +769,34 @@ export default function UserProfileForm({
             </AnimatePresence>
           </CardContent>
           <CardFooter className="flex justify-between">
-            <Button
-              onClick={handleBack}
-              disabled={currentSlide === 0}
-              variant="outline"
-            >
-              Back
-            </Button>
-            {currentSlide === slides.length - 1 ? (
-              <Button
-                type="button" // Ensure the button does not default to type="submit"
-                onClick={async () => {
-                  if (!isSubmitting) {
-                    setIsSubmitting(true);
-                    await handleSubmit(onSubmit)();
-                    setIsSubmitting(false);
-                  }
-                }}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Submitting..." : "Submit"}
-              </Button>
-            ) : (
-              <Button onClick={handleNext}>Next</Button>
-            )}
+            {/* Back Button: Shown on all slides except the first slide */}
+            <div>
+              {currentSlide > 0 && (
+                <Button onClick={handleBack} variant="outline">
+                  Back
+                </Button>
+              )}
+            </div>
+            {/* Next or Submit Button: Shown on all slides */}
+            <div>
+              {currentSlide < slides.length - 1 ? (
+                <Button onClick={handleNext}>Next</Button>
+              ) : (
+                <Button
+                  type="button" // Ensure the button does not default to type="submit"
+                  onClick={async () => {
+                    if (!isSubmitting) {
+                      setIsSubmitting(true);
+                      await handleSubmit(onSubmit)();
+                      setIsSubmitting(false);
+                    }
+                  }}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Submitting..." : "Submit"}
+                </Button>
+              )}
+            </div>
           </CardFooter>
         </Card>
       </DialogContent>

@@ -20,4 +20,11 @@ model Chat {
   updatedAt         DateTime @updatedAt
 }
 
+model Navigation {
+   id                String   @id @default(auto()) @map("_id") @db.ObjectId
+   uuid              String
+   sessionId         String
+   page              String
+   createdAt         DateTime @default(now())
+}
 

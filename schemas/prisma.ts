@@ -13,3 +13,10 @@ export const savedObjectSchema = z.object({
 });
 
 export type SavedObject = z.infer<typeof savedObjectSchema>;
+
+export const trackSchema = z.object({
+  uuid: z.string(),
+  sessionId: z.string(),
+  page: z.string(),
+});
+export type TrackType = z.infer<typeof trackSchema>;

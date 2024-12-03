@@ -2,6 +2,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -16,20 +17,27 @@ type Props = {
   content: string;
   title: string;
   className?: string;
+  footerCOntent?: React.ReactNode;
 };
 
-const DialogBox = ({ trigger, content, title, className }: Props) => {
+const DialogBox = ({
+  trigger,
+  content,
+  title,
+  className,
+  footerCOntent,
+}: Props) => {
   return (
     <Dialog>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent
-        className={cn("w-11/12 lg:max-w-[600px] max-h-[400px]", className)}
+        className={cn("w-11/12 lg:w-[600px] max-h-[600px]", className)}
       >
         <DialogHeader className="w-full p-5">
           <DialogTitle className="text-sm text-green-500">{title}</DialogTitle>
           <DialogDescription
             asChild
-            className="w-full overflow-auto max-h-[380px] p-2"
+            className="w-full overflow-auto h-full p-2  max-h-[350px]"
           >
             <ScrollArea className="w-full">
               <ReactMarkdown
@@ -41,6 +49,11 @@ const DialogBox = ({ trigger, content, title, className }: Props) => {
             </ScrollArea>
           </DialogDescription>
         </DialogHeader>
+        {footerCOntent && (
+          <DialogFooter className="w-full h-[30px] flex justify-end items-center gap-2">
+            {footerCOntent}
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

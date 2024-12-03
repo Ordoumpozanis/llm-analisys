@@ -56,6 +56,7 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
 
   const analysed = useUserStore((state) => state.analysed);
   const setAnalysed = useUserStore((state) => state.setAnalysed);
+  const chatInfo = useUserStore((state) => state.chatInfo);
   const router = useRouter();
 
   useEffect(() => {
@@ -144,12 +145,13 @@ const Dashboard = ({ className, ...props }: DashboardProps) => {
               if (!uuid) {
                 setUuid(newUuid);
               }
-
+              const updatedSessionInfo = { ...sessionInfo, ...chatInfo };
+              console.log("updatedSessionInfo", updatedSessionInfo);
               // create finale object
               const toSave = {
                 messages: messages,
                 globalStatistics: globalStatistics,
-                sessionInfo: sessionInfo,
+                sessionInfo: updatedSessionInfo,
                 userData: { ...userData },
                 type: "General",
                 date: new Date().toISOString(),

@@ -9,9 +9,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PieChartLabeled } from "@/components/Dashboard/Charts/pie-chart-labeled";
 import { DonutChartCenter } from "@/components/Dashboard//Charts/donut-chart-center";
 import { BarChartHor } from "@/components/Dashboard//Charts/bar-chart-hor";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import ListOfReferences from "@/components/Dashboard/References/references";
 import Chatmessages from "@/components/Dashboard/Messages/messages";
+import { Button } from "../ui/button";
+import Link from "next/link";
+import { menuLInks } from "@/setup/menu-links";
 
 type ChartAnalisysProps = {
   className?: string;
@@ -284,63 +293,58 @@ const ChartAnalisys = ({
       {/* Title Row */}
 
       {openChart && (
-        <Card
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform w-11/12 lg:w-[650px]  border-green-500/50"
-          onClick={onCardClick}
-        >
-          <CardHeader>
-            <div className="w-full flex justify-end items-center">
-              <button className="rounded-full bg-background text-foreground border-1 p-1 w-fit animate-pulse text-green-500">
-                Click to continue
-              </button>
-            </div>
-            <CardTitle className="w-full bg-gradient-to-br from-slate-300 to-green-600 py-4 bg-clip-text text-center text-md md:text-lg lg:text-xl font-medium tracking-tight text-transparent mb-2">
-              Undertanding your Energy Consumption Impact
+        <Card className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform w-11/12 lg:w-[650px]  border-green-500/50">
+          <CardHeader className="w-full  flex flex-col justify-center items-center gap-0">
+            <div
+              className="w-full h-[150px]  rounded-lg overflow-hidden bg-cover bg-center"
+              style={{
+                backgroundImage: `url(${
+                  energyImage || "/images/consumption/c.webp"
+                })`,
+              }}
+            />
+
+            <p className="w-full text-foreground text-center pt-2">
+              The energy needed for your converastion is {totalEnergy} Wh and
+              equevelen to:
+            </p>
+            <CardTitle className="w-full bg-gradient-to-br from-slate-300 to-green-600  bg-clip-text text-center text-md md:text-lg lg:text-xl font-medium tracking-tight text-transparent capitalize">
+              {energyDescription}
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="w-full">
-            <div className="flex gap-2 w-full">
-              <div className="w-full md:w-1/2 flex flex-col gap-1">
-                {/* title */}
-                <div className="text-sm prose dark:prose-invert lg:text-left leading-relaxed w-full mt-5 text-center">
-                  The energy spended in this chat was{" "}
-                  <span className="text-cyan-500 underline">
-                    {totalEnergy} Wh
-                  </span>{" "}
-                  and is equivalent to{" "}
-                </div>
-                <div className="w-full bg-gradient-to-br from-slate-300 to-green-600 py-4 bg-clip-text text-center text-md md:text-lg lg:text-xl font-medium tracking-tight text-transparent">
-                  {energyDescription}
-                </div>
-                {/* description */}
-                <div className="text-sm prose dark:prose-invert lg:text-left leading-relaxed text-full">
-                  {`OpenAI announced that they have reached 200 million active
-                  users. If each user sends just one session per day, like the
-                  one you're interacting with, the total daily energy
-                  consumption would be `}
-                </div>
-                <div className="w-full bg-gradient-to-br from-slate-300 to-green-600 py-4 bg-clip-text text-center text-md md:text-lg lg:text-xl font-medium tracking-tight text-transparent">
-                  {Math.round(totalEnergy * 200)} [GWh]
-                </div>
-                <div className="text-sm prose dark:prose-invert lg:text-left leading-relaxed">
-                  enough to power NEW YORK CITY for{" "}
-                </div>
-                <div className="w-full bg-gradient-to-br from-slate-300 to-green-600 py-4 bg-clip-text text-center text-md md:text-lg lg:text-xl font-medium tracking-tight text-transparent">
+          <CardContent className="w-full mt-0">
+            <div className="w-full flex gap-1 flex-col lg:flex-row">
+              <p className="w-full lg:w-8/12 text-sm prose dark:prose-invert lg:text-left leading-relaxed text-full">
+                OpenAI announced that they have reached 200 million active
+                users.{" "}
+                <span className="text-green-200">
+                  {" "}
+                  If each user create your chat for one time the needed energy
+                  would be equvalent to
+                </span>{" "}
+              </p>
+
+              <div className="w-full lg:w-4/12 flex flex-col justify-center items-center">
+                <p className="w-full text-center">Power New York City for</p>
+                <div className="w-full bg-gradient-to-br from-slate-300 to-green-600 py-2 lg:py-4 bg-clip-text text-center text-md md:text-lg lg:text-xl tracking-tight text-transparent font-bold">
                   {((totalEnergy * 200) / 136).toFixed(2)} days
                 </div>
               </div>
-
-              <div
-                className="w-2/4 overflow-hidden hidden md:flex bg-cover bg-center"
-                style={{
-                  backgroundImage: `url(${
-                    energyImage || "/images/consumption/c.webp"
-                  })`,
-                }}
-              ></div>
             </div>
           </CardContent>
+          <CardFooter className="w-full flex justify-end items-center gap-2">
+            <Button
+              variant="secondary"
+              className="border-green-500 border-[1px]"
+              onClick={onCardClick}
+            >
+              Advanced Analytics
+            </Button>
+            <Link href={menuLInks[1].href}>
+              <Button>New Evaluation</Button>
+            </Link>
+          </CardFooter>
         </Card>
       )}
     </div>
