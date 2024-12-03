@@ -63,9 +63,7 @@ const FloatingDockMobile = ({
   const pathname = usePathname(); // Get the current pathname
 
   useEffect(() => {
-    if (open) {
-      setIsMenuOpen(true);
-    }
+    setIsMenuOpen(open);
   }, [open]);
 
   return (

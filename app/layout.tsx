@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { FloatingDock } from "@/components/ui/floating-dock";
 import { menuLInks } from "@/setup/menu-links";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -59,7 +60,9 @@ export default function RootLayout({
               mobileClassName="absolute top-10 right-10 w-fit h-fit"
             />
           </div>
-
+          <GoogleAnalytics
+            gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS as string}
+          />
           <Toaster position="top-center" />
         </ThemeProvider>
       </body>
