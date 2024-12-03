@@ -9,10 +9,10 @@ export async function getHtml({ url }: { url: string }) {
 
     const dom = new JSDOM(htmlContent);
     const document = dom.window.document;
-
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     document
       .querySelectorAll("meta, link, audio")
-      .forEach((element) => element.remove());
+      .forEach((element: any) => element.remove());
 
     const cleanedHTML: string = dom.serialize();
 

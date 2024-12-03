@@ -154,9 +154,10 @@ export class GptScrapper {
       const document = dom.window.document;
 
       console.log("Cleaning up unwanted HTML elements.");
+      /* eslint-disable @typescript-eslint/no-explicit-any */
       document
         .querySelectorAll("meta, link, audio")
-        .forEach((element) => element.remove());
+        .forEach((element: any) => element.remove());
 
       const cleanedHTML: string = dom.serialize();
       console.log("HTML content cleaned successfully.");
